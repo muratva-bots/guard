@@ -29,6 +29,15 @@ declare global {
 			guildData: IGuild;
 		}
 
-		export type TSafe = "FULL" | "GENERAL" | "ROLE" | "CHANNEL" | "EMOJI" | "STICKER" | "BAN_KICK" | "WEBHOOK";
+		export type TSafe =
+			| "FULL"
+			| "GENERAL"
+			| "ROLE"
+			| "CHANNEL"
+			| "EMOJI"
+			| "STICKER"
+			| "BAN_KICK"
+			| "WEBHOOK"
+			| "VOICE_KICK";
 	}
 }

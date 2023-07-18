@@ -6,5 +6,6 @@ export enum SafeFlags {
     Emoji = "EMOJI",
     Sticker = "STICKER",
     BanKick = "BAN_KICK",
-    Webhook = "WEBHOOK"
+    Webhook = "WEBHOOK",
+    VoiceKick = "VOICE_KICK"
 }
