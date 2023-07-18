@@ -1,4 +1,4 @@
-import { SafeFlags } from "@guard-bot/enums";
+import { LimitFlags, SafeFlags } from "@guard-bot/enums";
 import { ChannelModel } from "@guard-bot/models";
 import { AuditLogEvent, Events, GuildChannel, bold, inlineCode } from "discord.js";
 
@@ -23,7 +23,7 @@ const ChannelUpdate: Guard.IEvent = {
 
             const limit = client.utils.checkLimits(
                 entry.executor.id,
-                'channel_operations',
+                LimitFlags.Channel,
                 guildData.settings.guard.channelLimitCount,
                 guildData.settings.guard.channelLimitTime,
                 safe.includes(SafeFlags.Channel) 

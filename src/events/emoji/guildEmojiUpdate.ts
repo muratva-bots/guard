@@ -1,4 +1,4 @@
-import { SafeFlags } from "@guard-bot/enums";
+import { LimitFlags, SafeFlags } from "@guard-bot/enums";
 import { AuditLogEvent, Events, bold, inlineCode } from "discord.js";
 
 const GuildEmojiUpdate: Guard.IEvent = {
@@ -20,7 +20,7 @@ const GuildEmojiUpdate: Guard.IEvent = {
 
             const limit = client.utils.checkLimits(
                 entry.executor.id,
-                'emoji_operations',
+                LimitFlags.Emoji,
                 guildData.settings.guard.emojiLimitCount,
                 guildData.settings.guard.emojiLimitTime,
                 safe.includes(SafeFlags.Emoji) 

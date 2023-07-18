@@ -1,4 +1,4 @@
-import { SafeFlags } from "@guard-bot/enums";
+import { LimitFlags, SafeFlags } from "@guard-bot/enums";
 import { AuditLogEvent, Events, bold, inlineCode } from "discord.js";
 
 const GuildBanAdd: Guard.IEvent = {
@@ -20,7 +20,7 @@ const GuildBanAdd: Guard.IEvent = {
 
             const limit = client.utils.checkLimits(
                 entry.executor.id,
-                'ban_kick_operations',
+                LimitFlags.BanKick,
                 guildData.settings.guard.banKickLimitCount,
                 guildData.settings.guard.banKickLimitTime,
                 safe.includes(SafeFlags.BanKick) 

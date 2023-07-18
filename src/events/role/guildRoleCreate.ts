@@ -1,4 +1,4 @@
-import { SafeFlags } from "@guard-bot/enums";
+import { LimitFlags, SafeFlags } from "@guard-bot/enums";
 import { AuditLogEvent, Events, bold, inlineCode } from "discord.js";
 
 const GuildRoleCreate: Guard.IEvent = {
@@ -20,7 +20,7 @@ const GuildRoleCreate: Guard.IEvent = {
 
             const limit = client.utils.checkLimits(
                 entry.executor.id,
-                'role_operations',
+                LimitFlags.Role,
                 guildData.settings.guard.roleLimitCount,
                 guildData.settings.guard.roleLimitTime,
                 safe.includes(SafeFlags.Role) 

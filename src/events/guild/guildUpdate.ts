@@ -1,4 +1,4 @@
-import { SafeFlags } from "@guard-bot/enums";
+import { LimitFlags, SafeFlags } from "@guard-bot/enums";
 import { AuditLogEvent, Events, bold, inlineCode } from "discord.js";
 
 const GuildUpdate: Guard.IEvent = {
@@ -20,7 +20,7 @@ const GuildUpdate: Guard.IEvent = {
 
             const limit = client.utils.checkLimits(
                 entry.executor.id,
-                'general_operations',
+                LimitFlags.BanKick,
                 guildData.settings.guard.generalLimitCount,
                 guildData.settings.guard.generalLimitTime,
                 safe.includes(SafeFlags.General) 
