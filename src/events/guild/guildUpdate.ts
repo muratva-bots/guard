@@ -21,8 +21,8 @@ const GuildUpdate: Guard.IEvent = {
             const limit = client.utils.checkLimits(
                 entry.executor.id,
                 'general_operations',
-                (guildData.settings.guard.generalLimitCount || client.config.DEFAULTS.LIMIT.COUNT),
-                (guildData.settings.guard.generalLimitTime || client.config.DEFAULTS.LIMIT.TIME),
+                guildData.settings.guard.generalLimitCount,
+                guildData.settings.guard.generalLimitTime,
                 safe.includes(SafeFlags.General) 
             );
             if (limit) {

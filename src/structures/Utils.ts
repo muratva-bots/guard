@@ -38,8 +38,11 @@ export class Utils {
 		this.client.servers.set(guildId, document.toObject());
 	}
 
-	checkLimits(id: string, type: string, limit: number = 5, time: number = 1000 * 60 * 15, canCheck: boolean) {
+	checkLimits(id: string, type: string, limit: undefined | number, time: undefined | number, canCheck: boolean) {
 		if (!canCheck) return undefined;
+
+		if (!limit) limit = this.client.config.DEFAULTS.LIMIT.COUNT;
+		if (!time) time = this.client.config.DEFAULTS.LIMIT.TIME;
 
 		const now = Date.now().valueOf();
 		const key = `${id}_${type}`;

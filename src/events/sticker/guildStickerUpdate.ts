@@ -21,8 +21,8 @@ const GuildStickerUpdate: Guard.IEvent = {
             const limit = client.utils.checkLimits(
                 entry.executor.id,
                 'sticker_operations',
-                (guildData.settings.guard.stickerLimitCount || client.config.DEFAULTS.LIMIT.COUNT),
-                (guildData.settings.guard.stickerLimitTime || client.config.DEFAULTS.LIMIT.TIME),
+                guildData.settings.guard.stickerLimitCount,
+                guildData.settings.guard.stickerLimitTime,
                 safe.includes(SafeFlags.Sticker) 
             );
             if (limit) {

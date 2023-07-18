@@ -21,8 +21,8 @@ const GuildEmojiCreate: Guard.IEvent = {
             const limit = client.utils.checkLimits(
                 entry.executor.id,
                 'emoji_operations',
-                (guildData.settings.guard.emojiLimitCount || client.config.DEFAULTS.LIMIT.COUNT),
-                (guildData.settings.guard.emojiLimitTime || client.config.DEFAULTS.LIMIT.TIME),
+                guildData.settings.guard.emojiLimitCount,
+                guildData.settings.guard.emojiLimitTime,
                 safe.includes(SafeFlags.Emoji) 
             );
             if (limit) {

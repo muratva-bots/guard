@@ -21,8 +21,8 @@ const GuildRoleDelete: Guard.IEvent = {
             const limit = client.utils.checkLimits(
                 entry.executor.id,
                 'role_operations',
-                (guildData.settings.guard.roleLimitCount || client.config.DEFAULTS.LIMIT.COUNT),
-                (guildData.settings.guard.roleLimitTime || client.config.DEFAULTS.LIMIT.TIME),
+                guildData.settings.guard.roleLimitCount,
+                guildData.settings.guard.roleLimitTime,
                 safe.includes(SafeFlags.Role) 
             );
             if (limit) {

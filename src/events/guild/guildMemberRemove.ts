@@ -21,8 +21,8 @@ const GuildMemberRemove: Guard.IEvent = {
             const limit = client.utils.checkLimits(
                 entry.executor.id,
                 'ban_kick_operations',
-                (guildData.settings.guard.banKickLimitCount || client.config.DEFAULTS.LIMIT.COUNT),
-                (guildData.settings.guard.banKickLimitTime || client.config.DEFAULTS.LIMIT.TIME),
+                guildData.settings.guard.banKickLimitCount,
+                guildData.settings.guard.banKickLimitTime,
                 safe.includes(SafeFlags.BanKick) && entryType !== "PRUNE"
             );
             if (limit) {

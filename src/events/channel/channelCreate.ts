@@ -23,8 +23,8 @@ const ChannelCreate: Guard.IEvent = {
             const limit = client.utils.checkLimits(
                 entry.executor.id,
                 'channel_operations',
-                (guildData.settings.guard.channelLimitCount || client.config.DEFAULTS.LIMIT.COUNT),
-                (guildData.settings.guard.channelLimitTime || client.config.DEFAULTS.LIMIT.TIME),
+                guildData.settings.guard.channelLimitCount,
+                guildData.settings.guard.channelLimitTime,
                 safe.includes(SafeFlags.Channel) 
             );
             if (limit) {
