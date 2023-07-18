@@ -9,7 +9,7 @@ const VoiceStateUpdate: Guard.IEvent = {
 	) => {
 		try {
 			const guildData = client.servers.get(newState.guild.id);
-			if (!guildData || !guildData.settings.guard.channel) return;
+			if (!guildData || !guildData.settings.guard.voiceKick) return;
 
 			const entry = await newState.guild
 				.fetchAuditLogs({
