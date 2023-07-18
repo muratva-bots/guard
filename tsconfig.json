@@ -1,0 +1,19 @@
+{
+	"ts-node": {
+		"require": ["tsconfig-paths/register"]
+	},
+	"compilerOptions": {
+		"module": "commonjs",
+		"target": "ESNext",
+		"resolveJsonModule": true,
+		"esModuleInterop": true,
+		"baseUrl": ".",
+		"typeRoots": ["node_modules/@types", "src/@types"],
+		"paths": {
+			"@guard-bot/structures": ["src/structures/index.ts"],
+			"@guard-bot/models": ["src/models/index.ts"],
+			"@guard-bot/enums": ["src/enums/index.ts"]
+		}
+	},
+	"include": ["src/**/*", "src/commands/management/checkRoles.ts"]
+}
