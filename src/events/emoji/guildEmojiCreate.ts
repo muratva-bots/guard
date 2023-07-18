@@ -1,4 +1,4 @@
-import { SafeFlags } from "@guard-bot/enums";
+import { LimitFlags, SafeFlags } from "@guard-bot/enums";
 import { AuditLogEvent, Events, bold, inlineCode } from "discord.js";
 
 const GuildEmojiCreate: Guard.IEvent = {
@@ -18,13 +18,13 @@ const GuildEmojiCreate: Guard.IEvent = {
             ];
             if (safe.includes(SafeFlags.Full)) return;
 
-            const limit = client.utils.checkLimits(
-                entry.executor.id,
-                'emoji_operations',
-                guildData.settings.guard.emojiLimitCount,
-                guildData.settings.guard.emojiLimitTime,
-                safe.includes(SafeFlags.Emoji) 
-            );
+            const limit = client.utils.checkLimits({
+                userId: entry.executor.id,
+                type: LimitFlags.Emoji,
+                limit: guildData.settings.guard.emojiLimitCount,
+                time: guildData.settings.guard.emojiLimitTime,
+                canCheck: safe.includes(SafeFlags.Emoji)
+            });
             if (limit) {
                 if (emoji.guild.publicUpdatesChannel) {
                     const remainingCount = limit.maxCount - limit.currentCount;

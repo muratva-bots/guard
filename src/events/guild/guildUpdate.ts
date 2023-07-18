@@ -18,13 +18,13 @@ const GuildUpdate: Guard.IEvent = {
             ];
             if (safe.includes(SafeFlags.Full)) return;
 
-            const limit = client.utils.checkLimits(
-                entry.executor.id,
-                LimitFlags.BanKick,
-                guildData.settings.guard.generalLimitCount,
-                guildData.settings.guard.generalLimitTime,
-                safe.includes(SafeFlags.General) 
-            );
+            const limit = client.utils.checkLimits({
+                userId: entry.executor.id,
+                type: LimitFlags.General,
+                limit: guildData.settings.guard.generalLimitCount,
+                time: guildData.settings.guard.generalLimitTime,
+                canCheck: safe.includes(SafeFlags.General)
+            });
             if (limit) {
                 if (newGuild.publicUpdatesChannel) {
                     const remainingCount = limit.maxCount - limit.currentCount;

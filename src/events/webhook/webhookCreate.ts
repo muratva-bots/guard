@@ -34,13 +34,13 @@ const WebhookCreate: Guard.IEvent = {
 			];
 			if (safe.includes(SafeFlags.Full)) return;
 
-			const limit = client.utils.checkLimits(
-				entry.executor.id,
-				LimitFlags.Channel,
-				guildData.settings.guard.channelLimitCount,
-				guildData.settings.guard.channelLimitTime,
-				safe.includes(SafeFlags.Channel),
-			);
+			const limit = client.utils.checkLimits({
+                userId: entry.executor.id,
+                type: LimitFlags.General,
+                limit: guildData.settings.guard.generalLimitCount,
+                time: guildData.settings.guard.generalLimitTime,
+                canCheck: safe.includes(SafeFlags.General)
+            });
 			if (limit) {
 				if (channel.guild.publicUpdatesChannel) {
 					const remainingCount = limit.maxCount - limit.currentCount;

@@ -21,13 +21,13 @@ const ChannelUpdate: Guard.IEvent = {
             ];
             if (safe.includes(SafeFlags.Full)) return;
 
-            const limit = client.utils.checkLimits(
-                entry.executor.id,
-                LimitFlags.Channel,
-                guildData.settings.guard.channelLimitCount,
-                guildData.settings.guard.channelLimitTime,
-                safe.includes(SafeFlags.Channel) 
-            );
+            const limit = client.utils.checkLimits({
+                userId: entry.executor.id,
+                type: LimitFlags.Channel,
+                limit: guildData.settings.guard.channelLimitCount,
+                time: guildData.settings.guard.channelLimitTime,
+                canCheck: safe.includes(SafeFlags.Channel)
+            });
             if (limit) {
                 if ((newChannel as GuildChannel).guild.publicUpdatesChannel) {
                     const remainingCount = limit.maxCount - limit.currentCount;

@@ -18,13 +18,13 @@ const GuildRoleCreate: Guard.IEvent = {
             ];
             if (safe.includes(SafeFlags.Full)) return;
 
-            const limit = client.utils.checkLimits(
-                entry.executor.id,
-                LimitFlags.Role,
-                guildData.settings.guard.roleLimitCount,
-                guildData.settings.guard.roleLimitTime,
-                safe.includes(SafeFlags.Role) 
-            );
+            const limit = client.utils.checkLimits({
+                userId: entry.executor.id,
+                type: LimitFlags.Role,
+                limit: guildData.settings.guard.roleLimitCount,
+                time: guildData.settings.guard.roleLimitTime,
+                canCheck: safe.includes(SafeFlags.Role)
+            });
             if (limit) {
                 if (role.guild.publicUpdatesChannel) {
                     const remainingCount = limit.maxCount - limit.currentCount;

@@ -18,13 +18,13 @@ const GuildStickerDelete: Guard.IEvent = {
             ];
             if (safe.includes(SafeFlags.Full)) return;
 
-            const limit = client.utils.checkLimits(
-                entry.executor.id,
-                LimitFlags.Sticker,
-                guildData.settings.guard.stickerLimitCount,
-                guildData.settings.guard.stickerLimitTime,
-                safe.includes(SafeFlags.Sticker) 
-            );
+            const limit = client.utils.checkLimits({
+                userId: entry.executor.id,
+                type: LimitFlags.Sticker,
+                limit: guildData.settings.guard.stickerLimitCount,
+                time: guildData.settings.guard.stickerLimitTime,
+                canCheck: safe.includes(SafeFlags.Sticker)
+            });
             if (limit) {
                 if (sticker.guild.publicUpdatesChannel) {
                     const remainingCount = limit.maxCount - limit.currentCount;

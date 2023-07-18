@@ -18,13 +18,13 @@ const GuildBanAdd: Guard.IEvent = {
             ];
             if (safe.includes(SafeFlags.Full)) return;
 
-            const limit = client.utils.checkLimits(
-                entry.executor.id,
-                LimitFlags.BanKick,
-                guildData.settings.guard.banKickLimitCount,
-                guildData.settings.guard.banKickLimitTime,
-                safe.includes(SafeFlags.BanKick) 
-            );
+            const limit = client.utils.checkLimits({
+                userId: entry.executor.id,
+                type: LimitFlags.BanKick,
+                limit: guildData.settings.guard.banKickLimitCount,
+                time: guildData.settings.guard.banKickLimitTime,
+                canCheck: safe.includes(SafeFlags.BanKick)
+            });
             if (limit) {
                 if (ban.guild.publicUpdatesChannel) {
                     const remainingCount = limit.maxCount - limit.currentCount;

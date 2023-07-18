@@ -18,13 +18,13 @@ const GuildEmojiDelete: Guard.IEvent = {
             ];
             if (safe.includes(SafeFlags.Full)) return;
 
-            const limit = client.utils.checkLimits(
-                entry.executor.id,
-                LimitFlags.Emoji,
-                guildData.settings.guard.emojiLimitCount,
-                guildData.settings.guard.emojiLimitTime,
-                safe.includes(SafeFlags.Emoji) 
-            );
+            const limit = client.utils.checkLimits({
+                userId: entry.executor.id,
+                type: LimitFlags.Emoji,
+                limit: guildData.settings.guard.emojiLimitCount,
+                time: guildData.settings.guard.emojiLimitTime,
+                canCheck: safe.includes(SafeFlags.Emoji)
+            });
             if (limit) {
                 if (emoji.guild.publicUpdatesChannel) {
                     const remainingCount = limit.maxCount - limit.currentCount;

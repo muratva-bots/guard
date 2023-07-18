@@ -1,11 +1,11 @@
-import { SafeFlags } from "@guard-bot/enums";
+import { LimitFlags, SafeFlags } from "@guard-bot/enums";
 import { AuditLogEvent, Events, bold, inlineCode } from "discord.js";
 
 const VoiceStateUpdate: Guard.IEvent = {
 	name: Events.VoiceStateUpdate,
 	execute: async (
 		client,
-		[oldState, newState]: Guard.ArgsOf<Events.VoiceStateUpdate>,
+		[, newState]: Guard.ArgsOf<Events.VoiceStateUpdate>,
 	) => {
 		try {
 			const guildData = client.servers.get(newState.guild.id);
@@ -40,13 +40,13 @@ const VoiceStateUpdate: Guard.IEvent = {
 			];
 			if (safe.includes(SafeFlags.Full)) return;
 
-			const limit = client.utils.checkLimits(
-				entry.executor.id,
-				"voicekick_operations",
-				guildData.settings.guard.voiceKickLimitCount,
-				guildData.settings.guard.voiceKickLimitTime,
-				safe.includes(SafeFlags.VoiceKick),
-			);
+			const limit = client.utils.checkLimits({
+                userId: entry.executor.id,
+                type: LimitFlags.VoiceKick,
+                limit: guildData.settings.guard.voiceKickLimitCount,
+                time: guildData.settings.guard.voiceKickLimitTime,
+                canCheck: safe.includes(SafeFlags.VoiceKick)
+            });
 			if (limit) {
 				if (newState.guild.publicUpdatesChannel) {
 					const remainingCount = limit.maxCount - limit.currentCount;

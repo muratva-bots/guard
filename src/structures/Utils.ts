@@ -38,14 +38,14 @@ export class Utils {
 		this.client.servers.set(guildId, document.toObject());
 	}
 
-	checkLimits(id: string, type: string, limit: undefined | number, time: undefined | number, canCheck: boolean) {
+	checkLimits({ userId, type, limit, time, canCheck }: { userId: string, type: string, limit?: number, time?: number, canCheck: boolean }) {
 		if (!canCheck) return undefined;
 
 		if (!limit) limit = this.client.config.DEFAULTS.LIMIT.COUNT;
 		if (!time) time = this.client.config.DEFAULTS.LIMIT.TIME;
 
 		const now = Date.now().valueOf();
-		const key = `${id}_${type}`;
+		const key = `${userId}_${type}`;
 		const userLimits = this.client.limits.get(key);
 		if (!userLimits) {
 			this.client.limits.set(key, { count: 1, lastDate: now });
