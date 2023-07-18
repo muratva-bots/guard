@@ -5,5 +5,5 @@ export enum LimitFlags {
 	Role = "role_operations",
 	Sticker = "sticker_operations",
 	VoiceKick = "voice_kick_operations",
-	General = "general_operations"
+	General = "general_operations",
 }

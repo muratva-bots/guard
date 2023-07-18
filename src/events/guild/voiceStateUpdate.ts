@@ -41,12 +41,12 @@ const VoiceStateUpdate: Guard.IEvent = {
 			if (safe.includes(SafeFlags.Full)) return;
 
 			const limit = client.utils.checkLimits({
-                userId: entry.executor.id,
-                type: LimitFlags.VoiceKick,
-                limit: guildData.settings.guard.voiceKickLimitCount,
-                time: guildData.settings.guard.voiceKickLimitTime,
-                canCheck: safe.includes(SafeFlags.VoiceKick)
-            });
+				userId: entry.executor.id,
+				type: LimitFlags.VoiceKick,
+				limit: guildData.settings.guard.voiceKickLimitCount,
+				time: guildData.settings.guard.voiceKickLimitTime,
+				canCheck: safe.includes(SafeFlags.VoiceKick),
+			});
 			if (limit) {
 				if (newState.guild.publicUpdatesChannel) {
 					const remainingCount = limit.maxCount - limit.currentCount;

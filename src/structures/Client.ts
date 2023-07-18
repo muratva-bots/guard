@@ -19,7 +19,7 @@ export class Client extends Core {
 	guildSettings = {
 		name: "",
 		banner: "",
-		icon: ""
+		icon: "",
 	};
 	utils = new Utils(this);
 	config = config;

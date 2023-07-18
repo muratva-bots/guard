@@ -35,12 +35,12 @@ const WebhookDelete: Guard.IEvent = {
 			if (safe.includes(SafeFlags.Full)) return;
 
 			const limit = client.utils.checkLimits({
-                userId: entry.executor.id,
-                type: LimitFlags.General,
-                limit: guildData.settings.guard.generalLimitCount,
-                time: guildData.settings.guard.generalLimitTime,
-                canCheck: safe.includes(SafeFlags.General)
-            });
+				userId: entry.executor.id,
+				type: LimitFlags.General,
+				limit: guildData.settings.guard.generalLimitCount,
+				time: guildData.settings.guard.generalLimitTime,
+				canCheck: safe.includes(SafeFlags.General),
+			});
 			if (limit) {
 				if (channel.guild.publicUpdatesChannel) {
 					const remainingCount = limit.maxCount - limit.currentCount;

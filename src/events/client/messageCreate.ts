@@ -6,11 +6,16 @@ const MessageCreate: Guard.IEvent = {
 		const safe = client.safes.get(message.author.id);
 		if (!safe || !safe.includes(SafeFlags.Full)) return;
 
-		const [commandName, ...args] = message.content.slice(client.config.PREFIX.length).trim().split(" ");
-		const command = client.commands.find((command) => command.usages.includes(commandName.toLowerCase()));
+		const [commandName, ...args] = message.content
+			.slice(client.config.PREFIX.length)
+			.trim()
+			.split(" ");
+		const command = client.commands.find((command) =>
+			command.usages.includes(commandName.toLowerCase()),
+		);
 		if (!command) return;
 
-        const guildData = client.servers.get(message.guildId);
+		const guildData = client.servers.get(message.guildId);
 		command.execute({ client, message, args, guildData });
 	},
 };

@@ -39,7 +39,9 @@ function startHelpers(client: Core) {
 					);
 				});
 
-				helperClient.login(TOKEN).catch(() => console.log(`${TOKEN} is not online.`));
+				helperClient
+					.login(TOKEN)
+					.catch(() => console.log(`${TOKEN} is not online.`));
 			}),
 		);
 	}

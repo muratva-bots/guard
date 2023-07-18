@@ -3,7 +3,7 @@ import { IGuild } from "./dto";
 
 const guildSchema = new Schema({
 	id: String,
-	settings: { type: Object, default: { guard: {}, moderation: {} } }
+	settings: { type: Object, default: { guard: {}, moderation: {} } },
 });
 
 export const GuildModel = model<IGuild>("Guild", guildSchema);

@@ -2,8 +2,22 @@ import { readdirSync } from "fs";
 import { resolve } from "path";
 
 import { Client } from "@guard-bot/structures";
-import { NewsChannel, PermissionFlagsBits, PermissionOverwrites, TextChannel, VoiceChannel } from "discord.js";
-import { ChannelModel, GuildModel, IChannel, IChannelOverwrite, IPermissions, IRole, RoleModel } from "@guard-bot/models";
+import {
+	NewsChannel,
+	PermissionFlagsBits,
+	PermissionOverwrites,
+	TextChannel,
+	VoiceChannel,
+} from "discord.js";
+import {
+	ChannelModel,
+	GuildModel,
+	IChannel,
+	IChannelOverwrite,
+	IPermissions,
+	IRole,
+	RoleModel,
+} from "@guard-bot/models";
 
 export class Utils {
 	private client: Client;
@@ -18,7 +32,7 @@ export class Utils {
 		PermissionFlagsBits.ManageWebhooks,
 		PermissionFlagsBits.ManageNicknames,
 		PermissionFlagsBits.ManageChannels,
-		PermissionFlagsBits.ManageEmojisAndStickers
+		PermissionFlagsBits.ManageEmojisAndStickers,
 	];
 
 	constructor(client: Client) {
@@ -33,12 +47,24 @@ export class Utils {
 		const document = await GuildModel.findOneAndUpdate(
 			{ id: guildId },
 			{ $set: { "settings.guard.danger": status } },
-			{ upsert: true }
+			{ upsert: true },
 		);
 		this.client.servers.set(guildId, document.toObject());
 	}
 
-	checkLimits({ userId, type, limit, time, canCheck }: { userId: string, type: string, limit?: number, time?: number, canCheck: boolean }) {
+	checkLimits({
+		userId,
+		type,
+		limit,
+		time,
+		canCheck,
+	}: {
+		userId: string;
+		type: string;
+		limit?: number;
+		time?: number;
+		canCheck: boolean;
+	}) {
 		if (!canCheck) return undefined;
 
 		if (!limit) limit = this.client.config.DEFAULTS.LIMIT.COUNT;
@@ -51,7 +77,7 @@ export class Utils {
 			this.client.limits.set(key, { count: 1, lastDate: now });
 			return {
 				maxCount: limit,
-				currentCount: 1
+				currentCount: 1,
 			};
 		}
 
@@ -59,24 +85,33 @@ export class Utils {
 		const diff = now - userLimits.lastDate;
 		if (diff < time && userLimits.count >= limit) return undefined;
 
-		if (diff > time) this.client.limits.set(key, { count: 1, lastDate: now });;
+		if (diff > time)
+			this.client.limits.set(key, { count: 1, lastDate: now });
 		return {
 			maxCount: limit,
-			currentCount: userLimits.count
-		}
+			currentCount: userLimits.count,
+		};
 	}
 
 	private getPermissions(permission: PermissionOverwrites) {
 		const permissions = {};
-		Object.keys(PermissionFlagsBits).forEach(p => (permissions[p] = null));
+		Object.keys(PermissionFlagsBits).forEach(
+			(p) => (permissions[p] = null),
+		);
 
 		const deny = permission.deny;
 		const allow = permission.allow;
 
-		Object.keys(PermissionFlagsBits).forEach(p => {
-			if (allow.has(PermissionFlagsBits[p]) && !deny.has(PermissionFlagsBits[p])) {
+		Object.keys(PermissionFlagsBits).forEach((p) => {
+			if (
+				allow.has(PermissionFlagsBits[p]) &&
+				!deny.has(PermissionFlagsBits[p])
+			) {
 				permissions[p] = true;
-			} else if (!allow.has(PermissionFlagsBits[p]) && deny.has(PermissionFlagsBits[p])) {
+			} else if (
+				!allow.has(PermissionFlagsBits[p]) &&
+				deny.has(PermissionFlagsBits[p])
+			) {
 				permissions[p] = false;
 			}
 		});
@@ -91,31 +126,44 @@ export class Utils {
 		const members = await guild.members.fetch();
 
 		const roles: IRole[] = [];
-		guild.roles.cache.sort((a, b) => a.position - b.position).filter(role => !role.managed).forEach((role) => {
-			const channelOverwrites: IChannelOverwrite[] = [];
-			guild.channels.cache.forEach((channel) => {
-				if (channel.isThread() || !channel.permissionOverwrites.cache.has(role.id)) return;
+		guild.roles.cache
+			.sort((a, b) => a.position - b.position)
+			.filter((role) => !role.managed)
+			.forEach((role) => {
+				const channelOverwrites: IChannelOverwrite[] = [];
+				guild.channels.cache.forEach((channel) => {
+					if (
+						channel.isThread() ||
+						!channel.permissionOverwrites.cache.has(role.id)
+					)
+						return;
 
-				const permission = channel.permissionOverwrites.cache.get(role.id);
-				channelOverwrites.push({
-					id: channel.id,
-					permissions: this.getPermissions(permission) as IPermissions,
+					const permission = channel.permissionOverwrites.cache.get(
+						role.id,
+					);
+					channelOverwrites.push({
+						id: channel.id,
+						permissions: this.getPermissions(
+							permission,
+						) as IPermissions,
+					});
+				});
+
+				roles.push({
+					guild: guild.id,
+					id: role.id,
+					channelOverwrites: channelOverwrites,
+					members: members
+						.filter((m) => m.roles.cache.has(role.id))
+						.map((member) => member.id),
+					name: role.name,
+					color: role.color,
+					position: role.position,
+					permissions: role.permissions.bitfield.toString(),
+					mentionable: role.mentionable,
+					hoist: role.hoist,
 				});
 			});
-
-			roles.push({
-				guild: guild.id,
-				id: role.id,
-				channelOverwrites: channelOverwrites,
-				members: members.filter(m => m.roles.cache.has(role.id)).map((member) => member.id),
-				name: role.name,
-				color: role.color,
-				position: role.position,
-				permissions: role.permissions.bitfield.toString(),
-				mentionable: role.mentionable,
-				hoist: role.hoist
-			});
-		});
 		await RoleModel.deleteMany();
 		await RoleModel.insertMany(roles);
 
@@ -129,17 +177,25 @@ export class Utils {
 				name: channel.name,
 				type: channel.type,
 				parent: channel.parentId,
-				topic: channel.isTextBased() ? (channel as NewsChannel | TextChannel).topic : undefined,
+				topic: channel.isTextBased()
+					? (channel as NewsChannel | TextChannel).topic
+					: undefined,
 				position: channel.rawPosition,
-				userLimit: channel.isVoiceBased() ? channel.userLimit : undefined,
+				userLimit: channel.isVoiceBased()
+					? channel.userLimit
+					: undefined,
 				nsfw: channel.isTextBased() ? channel.nsfw : undefined,
-				rateLimitPerUser: channel.isVoiceBased() ? (channel as VoiceChannel).rateLimitPerUser : undefined,
+				rateLimitPerUser: channel.isVoiceBased()
+					? (channel as VoiceChannel).rateLimitPerUser
+					: undefined,
 				bitrate: channel.isVoiceBased() ? channel.bitrate : undefined,
-				permissionOverwrites: channel.permissionOverwrites.cache.map((permission) => ({
-					id: permission.id,
-					type: permission.type,
-					permissions: this.getPermissions(permission)
-				})),
+				permissionOverwrites: channel.permissionOverwrites.cache.map(
+					(permission) => ({
+						id: permission.id,
+						type: permission.type,
+						permissions: this.getPermissions(permission),
+					}),
+				),
 			});
 		});
 		await ChannelModel.deleteMany();
@@ -156,7 +212,12 @@ export class Utils {
 
 		const permissions = [];
 		guild.roles.cache
-			.filter((role) => this.dangerPerms.some((perm) => role.permissions.has(perm)) && role.editable)
+			.filter(
+				(role) =>
+					this.dangerPerms.some((perm) =>
+						role.permissions.has(perm),
+					) && role.editable,
+			)
 			.forEach((role) => {
 				permissions.push({
 					role: role.id,
@@ -188,10 +249,14 @@ export class Utils {
 	async loadEvents() {
 		const categories = readdirSync(resolve(__dirname, "..", "events"));
 		for (const category of categories) {
-			const files = readdirSync(resolve(__dirname, "..", "events", category));
+			const files = readdirSync(
+				resolve(__dirname, "..", "events", category),
+			);
 			for (const fileName of files) {
 				const event = (
-					await import(resolve(__dirname, "..", "events", category, fileName))
+					await import(
+						resolve(__dirname, "..", "events", category, fileName)
+					)
 				).default as Guard.IEvent;
 				this.client.on(event.name, (...args: unknown[]) =>
 					event.execute(this.client, [...args]),
