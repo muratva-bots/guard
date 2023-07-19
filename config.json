@@ -1,13 +1,13 @@
 {
-	"MAIN_TOKEN": "",
-	"HELPER_TOKENS": [],
-	"PREFIX": "!",
-	"MONGO_URL": "",
-	"STATUS": "Canzade 💙 Muratva Stark",
-	"DEFAULTS": {
-		"LIMIT": {
-			"TIME": 900000,
-			"COUNT": 5
-		}
-	}
+    "MAIN_TOKEN": "",
+    "HELPER_TOKENS": [],
+    "PREFIX": "!",
+    "MONGO_URL": "",
+    "STATUS": "Canzade 💙 Muratva Stark",
+    "DEFAULTS": {
+        "LIMIT": {
+            "TIME": 900000,
+            "COUNT": 5
+        }
+    }
 }

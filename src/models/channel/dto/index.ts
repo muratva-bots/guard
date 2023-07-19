@@ -1,2 +1,2 @@
-export { IChannel } from "./IChannel";
-export { IPermissionOverwrites } from "./IPermissionOverwrites";
+export { IChannel } from './IChannel';
+export { IPermissionOverwrites } from './IPermissionOverwrites';

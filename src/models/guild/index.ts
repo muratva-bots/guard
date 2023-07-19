@@ -1,3 +1,3 @@
-export * from "./dto";
+export * from './dto';
 
-export { GuildModel } from "./Guild";
+export { GuildModel } from './Guild';

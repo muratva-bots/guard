@@ -1,1 +1,1 @@
-export { IGuild } from "./IGuild";
+export { IGuild } from './IGuild';

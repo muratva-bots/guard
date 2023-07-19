@@ -1,9 +1,6 @@
 {
-	"tabWidth": 4,
-	"useTabs": true,
-	"bracketSpacing": true,
-	"singleQuote": false,
-	"endOfLine": "crlf",
-	"trailingComma": "all",
-	"semi": true
+    "printWidth": 120,
+    "trailingComma": "all",
+    "singleQuote": true,
+    "tabWidth": 4
 }
