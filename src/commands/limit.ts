@@ -94,7 +94,7 @@ const Limit: Guard.ICommand = {
                         codeBlock(
                             'yaml',
                             [
-                                `# ${message.guild.name} Sunucusunun Koruma Sistemi (Sistem Durumu: )`,
+                                `# ${message.guild.name} Sunucusunun Limit Sistemi`,
                                 limits
                                     .map(
                                         (l) =>

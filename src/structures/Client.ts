@@ -3,7 +3,7 @@ import { connect } from 'mongoose';
 
 import { Utils } from './Utils';
 import config from '../../config.json';
-import { ISettings } from 'src/models/guild/dto/ISettings';
+import { ISettings } from '@guard-bot/models';
 
 export class Client extends Core {
     commands = new Collection<string, Guard.ICommand>();

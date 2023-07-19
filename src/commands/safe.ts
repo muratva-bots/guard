@@ -1,4 +1,3 @@
-import { MentionableSelectMenuBuilder } from '@discordjs/builders';
 import { GuildModel } from '@guard-bot/models';
 import {
     ActionRowBuilder,
@@ -9,8 +8,9 @@ import {
     StringSelectMenuInteraction,
     inlineCode,
     codeBlock,
-    userMention,
-    roleMention,
+    MentionableSelectMenuBuilder,
+    bold,
+    Role,
 } from 'discord.js';
 
 const titles = {
@@ -47,9 +47,9 @@ const titles = {
 const Safe: Guard.ICommand = {
     usages: ['safe', 'güvenli'],
     execute: async ({ client, message, args }) => {
-        if (!args[0] || !['liste', 'list', 'ekle', 'add'].some((a) => a === args[0])) {
+        if (!args[0] || !['liste', 'list', 'ekle', 'add', 'remove', 'kaldır'].some((a) => a === args[0])) {
             message.channel.send({
-                content: `Geçerli bir argüman belirt! (${inlineCode('liste')} veya ${inlineCode('ekle')})`,
+                content: `Geçerli bir argüman belirt! (${inlineCode('liste')}, ${inlineCode('kaldır')} veya ${inlineCode('ekle')})`,
             });
             return;
         }
@@ -91,19 +91,20 @@ const Safe: Guard.ICommand = {
             if (collectedOne) {
                 collectedOne.deferUpdate();
 
+                const titleKeys = Object.keys(titles);
                 const typeRow = new ActionRowBuilder<StringSelectMenuBuilder>({
                     components: [
                         new StringSelectMenuBuilder({
                             custom_id: 'type',
-                            max_values: 25,
-                            options: Object.keys(titles).map((key) => ({
+                            max_values: titleKeys.length,
+                            placeholder: "İzin seçilmemiş",
+                            options: titleKeys.map((key) => ({
                                 label: titles[key].name,
                                 value: key,
                                 description: titles[key].description,
                             })),
                         }),
                     ],
-                    type: ComponentType.StringSelect,
                 });
 
                 await question.edit({
@@ -118,9 +119,11 @@ const Safe: Guard.ICommand = {
                     componentType: ComponentType.StringSelect,
                 });
                 if (collectedTwo) {
-                    const safe = client.safes.get(collectedOne.values[0]);
-                    if (!safe) client.safes.set(collectedOne.values[0], collectedTwo.values as Guard.TSafe[]);
-                    else safe.push(...(collectedTwo.values as Guard.TSafe[]));
+                    for (const value of collectedOne.values) {
+                        const safe = client.safes.get(value);
+                        if (!safe) client.safes.set(collectedOne.values[0], collectedTwo.values as Guard.TSafe[]);
+                        else safe.push(...(collectedTwo.values as Guard.TSafe[]));
+                    }
 
                     const safes = Array.from(client.safes).map((s) => ({
                         id: s[0],
@@ -141,22 +144,53 @@ const Safe: Guard.ICommand = {
             } else question.delete();
         }
 
+        if (['kaldır', 'remove'].some((a) => args[0] === a)) {
+            const target = message.guild.roles.cache.get(args[1]) || client.users.cache.get(args[1]);
+            if (!target) {
+                message.channel.send({
+                    content: "Geçerli bir kullanıcı veya rol belirt!"
+                });
+                return;
+            }
+
+            const targetName = bold(target instanceof Role ? target.name : target.username);
+            const targetType = target instanceof Role ? "rol" : "kullanıcı";
+            message.channel.send({
+                embeds: [embed.setDescription(`${targetName} (${inlineCode(target.id)}) adlı ${targetType} güvenliden çıkarıldı!`)],
+            });
+
+            client.safes.delete(target.id);
+
+            const safes = Array.from(client.safes).map((s) => ({
+                id: s[0],
+                allow: s[1],
+            }));
+            await GuildModel.updateOne(
+                { id: message.guildId },
+                { $set: { 'settings.guard.safes': safes } },
+                { upsert: true },
+            );
+        }
+
         if (['liste', 'list'].some((a) => a === args[0])) {
+            const safes = [];
+            client.safes.forEach((value, id) => {
+                const safe = client.users.cache.has(id) ? client.users.cache.get(id) : (message.guild.roles.cache.has(id) ? message.guild.roles.cache.get(id) : undefined)
+                if (safe) {
+                    const titlesOfSafe = [...new Set(value.map((p) => titles[p].name))].join(', ');
+                    const entityType = safe instanceof Role ? "Rol" : "Kullanıcı";
+                    const safeName = safe instanceof Role ? safe.name : safe.username;
+                    safes.push(`→ ${safeName} (${entityType}): ${titlesOfSafe}`);
+                }
+            });
             message.channel.send({
                 embeds: [
-                    embed.setDescription(
-                        [
-                            codeBlock(`${message.guild.name} Sunucusunun Güvenli Listesi`),
-                            client.safes
-                                .map(
-                                    (v, k) =>
-                                        `${client.users.cache.get(k) ? userMention(k) : roleMention(k)}: ${v
-                                            .map((p) => titles[p].name)
-                                            .join(', ')}`,
-                                )
-                                .join('\n'),
-                        ].join('\n'),
-                    ),
+                    embed.setDescription([
+                        `Merhaba ${message.author} (${inlineCode(
+                            message.author.id,
+                        )}) koruma botu güvenli listesine hoşgeldin,\n`,
+                        codeBlock("yaml", `# ${message.guild.name} Sunucusunun Güvenli Listesi\n${safes.join("\n")}`)
+                    ].join("\n"))
                 ],
             });
         }
