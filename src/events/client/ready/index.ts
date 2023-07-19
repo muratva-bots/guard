@@ -40,7 +40,7 @@ const Ready: Guard.IEvent = {
         );
 
         const document = (await GuildModel.findOne({ id: guild.id })) || (await GuildModel.create({ id: guild.id }));
-        client.servers.set(guild.id, { settings: { moderation: {}, guard: {}, ...(document.settings || {}) } });
+        client.servers.set(guild.id, { settings: { guard: {}, ...(document.settings || {}) } });
 
         client.utils.danger = document.settings.guard.danger;
 
@@ -54,7 +54,7 @@ const Ready: Guard.IEvent = {
             fullDocument: 'updateLookup',
         });
         guildEventEmitter.on('change', ({ fullDocument }: { fullDocument: IGuild }) =>
-            client.servers.set(guild.id, { settings: { moderation: {}, guard: {}, ...(fullDocument.settings || {}) } }),
+            client.servers.set(guild.id, { settings: { guard: {}, ...(fullDocument.settings || {}) } }),
         );
     },
 };
