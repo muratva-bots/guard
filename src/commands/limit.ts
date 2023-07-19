@@ -94,7 +94,7 @@ const Limit: Guard.ICommand = {
                         codeBlock(
                             'yaml',
                             [
-                                `# ${message.guild.name} Sunucusunun Koruma Sistemi (Sistem Durumu: )`,
+                                `# ${message.guild.name} Sunucusunun Limit Sistemi`,
                                 limits
                                     .map(
                                         (l) =>
@@ -133,6 +133,10 @@ const Limit: Guard.ICommand = {
                             placeholder: '5',
                             style: TextInputStyle.Short,
                         }),
+                    ],
+                });
+                const row2 = new ActionRowBuilder<TextInputBuilder>({
+                    components: [
                         new TextInputBuilder({
                             custom_id: 'time',
                             max_length: 3,
@@ -146,7 +150,7 @@ const Limit: Guard.ICommand = {
                 const modal = new ModalBuilder({
                     custom_id: `limit-${limit.value}`,
                     title: limit.name,
-                    components: [row],
+                    components: [row, row2],
                 });
 
                 i.showModal(modal);

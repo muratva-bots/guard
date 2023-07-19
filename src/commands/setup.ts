@@ -32,6 +32,7 @@ const Setup: Guard.ICommand = {
                 new StringSelectMenuBuilder({
                     custom_id: 'guard-setup',
                     placeholder: 'Ayar seçilmemiş!',
+                    maxValues: muscles.length,
                     options: muscles.map((m) => ({
                         label: m.name,
                         value: m.value,
@@ -41,7 +42,6 @@ const Setup: Guard.ICommand = {
                     })),
                 }),
             ],
-            type: ComponentType.StringSelect,
         });
 
         const embed = new EmbedBuilder({
@@ -89,15 +89,14 @@ const Setup: Guard.ICommand = {
         });
 
         collector.on('collect', async (i: StringSelectMenuInteraction) => {
-            const muscle = muscles.find((m) => m.value === i.values[0]);
-            guildData.settings[muscle.value] = !guildData.settings[muscle.value];
+            i.values.forEach((v) => {
+                const muscle = muscles.find((m) => m.value === v);
+                guildData.settings[muscle.value] = !guildData.settings[muscle.value];
+            });
+
             await GuildModel.updateOne(
                 { id: message.guildId },
-                {
-                    $set: {
-                        [`settings.guard.${muscle.value}`]: guildData.settings[muscle.value],
-                    },
-                },
+                { $set: { [`settings.guard`]: guildData.settings } },
                 { upsert: true },
             );
 
@@ -123,7 +122,7 @@ const Setup: Guard.ICommand = {
                                 'yaml',
                                 [
                                     `# ${message.guild.name} Sunucusunun Koruma Sistemi (Sistem Durumu: ${
-                                        muscles.every((m) => !guildData.settings[m.value]) ? 'Açık!' : 'Kapalı!'
+                                        muscles.some((m) => !guildData.settings[m.value]) ? 'Açık!' : 'Kapalı!'
                                     })`,
                                     muscles
                                         .map(

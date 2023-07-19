@@ -1,8 +1,8 @@
 {
     "MAIN_TOKEN": "MTA5OTY5OTQ4MDcyODcxOTU0MA.Gq9rUP.v-YunpjjUxMwa-CKrVOYivKMTjn70z39ufjh60",
-    "HELPER_TOKENS": ["MTAxMDI2MDYxMjI0MjIyMzE3NQ.GNz1qf.WqooHAzliF6gFivKv7pmEYALTYPuocMN9Mm1XY"],
+    "HELPER_TOKENS": ["MTEyMzIwNDM1Njk0NzMyNDk5OQ.GRbX50.sHicMzZ-6Jckl9zKTLu1bMMOdxpVVBj6WDuymA"],
     "PREFIX": "!",
-    "MONGO_URL": "mongodb+srv://can:Can_Galatasaray_1905@cluster0.b8iccgb.mongodb.net/tsguard?retryWrites=true&w=majority",
+    "MONGO_URL": "mongodb+srv://can:Can_Galatasaray_1905@cluster0.b8iccgb.mongodb.net/tsguard2?retryWrites=true&w=majority",
     "STATUS": "Canzade 💙 Muratva Stark",
     "DEFAULTS": {
         "LIMIT": {

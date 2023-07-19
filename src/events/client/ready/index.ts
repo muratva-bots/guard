@@ -1,12 +1,12 @@
-import { GuildModel, IGuild } from '@guard-bot/models';
-import checkOfflineAndWeb from './checkOfflineAndWeb';
-import { Events, Team } from 'discord.js';
 import { SafeFlags } from '@guard-bot/enums';
+import { GuildModel, IGuild } from '@guard-bot/models';
+import { Events, Team } from 'discord.js';
+import checkOfflineAndWeb from './checkOfflineAndWeb';
 
 const Ready: Guard.IEvent = {
     name: Events.ClientReady,
     execute: async (client) => {
-        const guild = client.guilds.cache.first();
+        const guild = client.guilds.cache.get('1130942265020383373');
         if (!guild) {
             console.log('Guild is undefined.');
             return;
