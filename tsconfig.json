@@ -15,5 +15,5 @@
             "@guard-bot/enums": ["src/enums/index.ts"]
         }
     },
-    "include": ["src/**/*", "src/commands/management/checkRoles.ts"]
+    "include": ["src/**/*"]
 }

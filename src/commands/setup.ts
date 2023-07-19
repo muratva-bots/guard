@@ -96,7 +96,7 @@ const Setup: Guard.ICommand = {
 
             await GuildModel.updateOne(
                 { id: message.guildId },
-                { $set: { [`settings.guard`]: guildData.settings } },
+                { $set: { 'settings.guard': guildData.settings } },
                 { upsert: true },
             );
 

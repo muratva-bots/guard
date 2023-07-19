@@ -162,7 +162,7 @@ const Safe: Guard.ICommand = {
 
             if (!client.safes.get(target.id)) {
                 message.channel.send({
-                    content: 'Belirttiğin kişi veya rol güvenli listesinde zaten bulunmuyor!',
+                    content: 'Belirttiğin kişi, rol güvenli listesinde zaten bulunmuyor!',
                 });
                 return;
             }
