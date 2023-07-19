@@ -54,7 +54,7 @@ const Ready: Guard.IEvent = {
             fullDocument: 'updateLookup',
         });
         guildEventEmitter.on('change', ({ fullDocument }: { fullDocument: IGuild }) =>
-            client.servers.set(guild.id, fullDocument),
+            client.servers.set(guild.id, { settings: { moderation: {}, guard: {}, ...(fullDocument.settings || {}) } }),
         );
     },
 };
