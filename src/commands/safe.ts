@@ -153,14 +153,19 @@ const Safe: Guard.ICommand = {
                 message.mentions.users.first() ||
                 message.mentions.roles.first();
 
-            if (!target || !client.safes.get(target.id)) {
+            if (!target) {
                 message.channel.send({
-                    content:
-                        'Geçerli bir kullanıcı, rol belirtmedin veya belirttiğin kişi, rol güvenli listesinde zaten bulunmuyor!',
+                    content: 'Geçerli bir kullanıcı veya rol belirtmedin!',
                 });
                 return;
             }
 
+            if (!client.safes.get(target.id)) {
+                message.channel.send({
+                    content: 'Belirttiğin kişi veya rol güvenli listesinde zaten bulunmuyor!',
+                });
+                return;
+            }
             const targetName = bold(target instanceof Role ? target.name : target.username);
             const targetType = target instanceof Role ? 'rol' : 'kullanıcı';
             message.channel.send({
