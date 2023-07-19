@@ -48,7 +48,7 @@ const GuildBanAdd: Guard.IEvent = {
             await ban.guild.members.unban(entry.executor.id);
 
             if (ban.guild.publicUpdatesChannel) {
-                const userName = bold(ban.user.tag);
+                const userName = bold(ban.user.username);
                 const action = safe.length ? 'yasakladı limite ulaştı' : 'yasakladı';
                 ban.guild.publicUpdatesChannel.send(
                     `@everyone ${entry.executor} adlı kullanıcı ${userName} adlı kullanıcıyı ${action} ve yasaklandı.`,

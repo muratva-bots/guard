@@ -1,5 +1,5 @@
-import { Client, GatewayIntentBits } from 'discord.js';
 import { Client as Core } from '@guard-bot/structures';
+import { Client, GatewayIntentBits } from 'discord.js';
 
 function startHelpers(client: Core) {
     console.log('The helpers is waking up.');

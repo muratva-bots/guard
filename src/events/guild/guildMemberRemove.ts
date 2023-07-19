@@ -1,5 +1,5 @@
 import { LimitFlags, SafeFlags } from '@guard-bot/enums';
-import { AuditLogEvent, Events, bold, inlineCode, Guild } from 'discord.js';
+import { AuditLogEvent, Events, Guild, bold, inlineCode } from 'discord.js';
 
 const GuildMemberRemove: Guard.IEvent = {
     name: Events.GuildMemberRemove,
@@ -45,7 +45,7 @@ const GuildMemberRemove: Guard.IEvent = {
             await client.utils.setDanger(member.guild.id, true);
 
             if (member.guild.publicUpdatesChannel) {
-                const userName = bold(member.user.tag);
+                const userName = bold(member.user.username);
                 const action = safe.length ? 'kickledi limite ulaştı' : 'kickledi';
                 member.guild.publicUpdatesChannel.send(
                     `@everyone ${entry.executor} adlı kullanıcı ${userName} adlı kullanıcıyı ${action} ve yasaklandı.`,
