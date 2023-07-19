@@ -1,6 +1,6 @@
-import { IGuild } from '@guard-bot/models';
 import { Client } from '@guard-bot/structures';
 import { ClientEvents, Message } from 'discord.js';
+import { ISettings } from 'src/models/guild/dto/ISettings';
 
 declare global {
     namespace Guard {
@@ -26,7 +26,7 @@ declare global {
             client: Client;
             message: Message;
             args: string[];
-            guildData: IGuild;
+            guildData: ISettings;
         }
 
         export type TSafe =

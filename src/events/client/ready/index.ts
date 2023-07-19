@@ -40,7 +40,7 @@ const Ready: Guard.IEvent = {
         );
 
         const document = (await GuildModel.findOne({ id: guild.id })) || (await GuildModel.create({ id: guild.id }));
-        client.servers.set(guild.id, document.toObject());
+        client.servers.set(guild.id, { settings: { moderation: {}, guard: {}, ...document.toObject() } });
 
         client.utils.danger = document.settings.guard.danger;
 
