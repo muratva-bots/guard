@@ -1,6 +1,6 @@
 import { LimitFlags, SafeFlags } from '@guard-bot/enums';
 import { RoleModel } from '@guard-bot/models';
-import { AuditLogEvent, Events, bold, inlineCode } from 'discord.js';
+import { AuditLogEvent, EmbedBuilder, Events, bold, codeBlock, inlineCode, roleMention } from 'discord.js';
 
 const GuildRoleUpdate: Guard.IEvent = {
     name: Events.GuildRoleUpdate,
@@ -23,6 +23,7 @@ const GuildRoleUpdate: Guard.IEvent = {
                             limit: 3,
                             time: 1000 * 60,
                             canCheck: true,
+                            operation: 'operation',
                         })
                     )
                         await client.utils.closePermissions();
@@ -37,12 +38,18 @@ const GuildRoleUpdate: Guard.IEvent = {
             ];
             if (safe.includes(SafeFlags.Full)) return;
 
+            const embed = new EmbedBuilder({ color: client.utils.getRandomColor() });
+
             const limit = client.utils.checkLimits({
                 userId: entry.executor.id,
                 type: LimitFlags.Role,
                 limit: guildData.settings.roleLimitCount,
                 time: guildData.settings.roleLimitTime,
                 canCheck: safe.includes(SafeFlags.Role),
+                operation: `${new Date().toLocaleDateString('tr-TR', {
+                    hour: 'numeric',
+                    minute: 'numeric',
+                })} -> Rol Güncelleme`,
             });
             if (limit) {
                 if (oldRole.guild.publicUpdatesChannel) {
@@ -52,7 +59,7 @@ const GuildRoleUpdate: Guard.IEvent = {
                     )} hakkından birini kullandığı için uyarıldı. Kalan limit ${inlineCode(
                         remainingCount.toString(),
                     )}. (${inlineCode(`${limit.currentCount}/${limit.maxCount}`)})`;
-                    oldRole.guild.publicUpdatesChannel.send({ content });
+                    oldRole.guild.publicUpdatesChannel.send({ embeds: [embed.setDescription(content)] });
                 }
                 return;
             }
@@ -76,11 +83,25 @@ const GuildRoleUpdate: Guard.IEvent = {
             }
 
             if (oldRole.guild.publicUpdatesChannel) {
-                const roleName = bold(oldRole.name);
+                const authorName = `${entry.executor} (${inlineCode(entry.executorId)})`;
+                const roleName = `${oldRole} (${inlineCode(oldRole.id)})`;
                 const action = safe.length ? 'güncelleyerek limite ulaştı' : 'güncelledi';
-                oldRole.guild.publicUpdatesChannel.send(
-                    `@everyone ${entry.executor} adlı kullanıcı ${roleName} adlı rolü ${action} ve yasaklandı.`,
-                );
+                oldRole.guild.publicUpdatesChannel.send({
+                    content: roleMention(oldRole.guild.id),
+                    embeds: [
+                        embed.setDescription(
+                            [
+                                `${authorName} adlı kullanıcı ${roleName} adlı rolü ${action} ve yasaklandı.`,
+                                safe.includes(SafeFlags.General)
+                                    ? [
+                                          '# Limite Yakalanmadan Önceki İşlemleri',
+                                          codeBlock('yaml', limit.operations.map((o, i) => `${i++}. ${o}`).join('\n')),
+                                      ].join('\n')
+                                    : undefined,
+                            ].join('\n'),
+                        ),
+                    ],
+                });
             }
         } catch (error) {
             console.error('Guild Role Update Error:', error);

@@ -1,5 +1,5 @@
 import { GuildModel } from '@guard-bot/models';
-import { bold, inlineCode } from 'discord.js';
+import { EmbedBuilder, bold, codeBlock, inlineCode } from 'discord.js';
 
 const Permissions: Guard.ICommand = {
     usages: ['close-permissions', 'close-perms', 'closeperms', 'cperms', 'perms', 'permissions'],
@@ -14,11 +14,15 @@ const Permissions: Guard.ICommand = {
 
         if (client.utils.closingPermissions) client.utils.closingPermissions = false;
 
+        const processRoles: string[] = [];
         const data = (await GuildModel.findOne({ id: message.guildId })) || new GuildModel({ id: message.guildId });
         if (operation === 'aç') {
-            data.settings.guard.permissions.forEach((permission) => {
+            (data.settings.guard.permissions || []).forEach((permission) => {
                 const role = message.guild.roles.cache.find((r) => r.name === permission.name);
-                if (role) role.setPermissions(permission.allow);
+                if (role) {
+                    role.setPermissions(permission.allow);
+                    processRoles.push(`→ ${role.name}`);
+                }
             });
         } else {
             data.settings.guard.permissions = [];
@@ -32,12 +36,24 @@ const Permissions: Guard.ICommand = {
                     allow: role.permissions.toArray(),
                 });
                 await role.setPermissions([]);
+                processRoles.push(`→ ${role.name}`);
             }
             await data.save();
         }
 
         message.channel.send({
-            content: `Bütün yetkiler ${bold(operation === 'aç' ? 'açıldı.' : 'kapatıldı.')}`,
+            embeds: [
+                new EmbedBuilder({
+                    author: {
+                        name: message.author.username,
+                        icon_url: message.author.displayAvatarURL({ size: 4096, forceStatic: true }),
+                    },
+                    description: [
+                        `Bütün yetkiler ${bold(operation === 'aç' ? 'açıldı.' : 'kapatıldı.')}`,
+                        codeBlock('yaml', ['# İşlem Yapılan Roller', processRoles.join('\n')].join('\n')),
+                    ].join('\n'),
+                }),
+            ],
         });
     },
 };

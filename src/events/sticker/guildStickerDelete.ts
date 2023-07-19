@@ -1,5 +1,5 @@
 import { LimitFlags, SafeFlags } from '@guard-bot/enums';
-import { AuditLogEvent, Events, bold, inlineCode } from 'discord.js';
+import { AuditLogEvent, EmbedBuilder, Events, bold, codeBlock, inlineCode, roleMention } from 'discord.js';
 
 const GuildStickerDelete: Guard.IEvent = {
     name: Events.GuildStickerDelete,
@@ -20,12 +20,18 @@ const GuildStickerDelete: Guard.IEvent = {
             ];
             if (safe.includes(SafeFlags.Full)) return;
 
+            const embed = new EmbedBuilder({ color: client.utils.getRandomColor() });
+
             const limit = client.utils.checkLimits({
                 userId: entry.executor.id,
                 type: LimitFlags.Sticker,
                 limit: guildData.settings.stickerLimitCount,
                 time: guildData.settings.stickerLimitTime,
                 canCheck: safe.includes(SafeFlags.Sticker),
+                operation: `${new Date().toLocaleDateString('tr-TR', {
+                    hour: 'numeric',
+                    minute: 'numeric',
+                })} -> Çıkartma Silme`,
             });
             if (limit) {
                 if (sticker.guild.publicUpdatesChannel) {
@@ -35,7 +41,7 @@ const GuildStickerDelete: Guard.IEvent = {
                     )} hakkından birini kullandığı için uyarıldı. Kalan limit ${inlineCode(
                         remainingCount.toString(),
                     )}. (${inlineCode(`${limit.currentCount}/${limit.maxCount}`)})`;
-                    sticker.guild.publicUpdatesChannel.send({ content });
+                    sticker.guild.publicUpdatesChannel.send({ embeds: [embed.setDescription(content)] });
                 }
                 return;
             }
@@ -49,11 +55,25 @@ const GuildStickerDelete: Guard.IEvent = {
             });
 
             if (sticker.guild.publicUpdatesChannel) {
+                const authorName = `${entry.executor} (${inlineCode(entry.executorId)})`;
                 const stickerName = `${sticker.name} (${inlineCode(sticker.id)})`;
-                const action = safe.length ? 'sildi limite ulaştı' : 'sildi';
-                sticker.guild.publicUpdatesChannel.send(
-                    `@everyone ${entry.executor} adlı kullanıcı ${stickerName} adlı çıkartmayı ${action} ve yasaklandı.`,
-                );
+                const action = safe.length ? 'silerek limite ulaştı' : 'sildi';
+                sticker.guild.publicUpdatesChannel.send({
+                    content: roleMention(sticker.guildId),
+                    embeds: [
+                        embed.setDescription(
+                            [
+                                `${authorName} adlı kullanıcı ${stickerName} adlı çıkartmayı ${action} ve yasaklandı.`,
+                                safe.includes(SafeFlags.General)
+                                    ? [
+                                          '# Limite Yakalanmadan Önceki İşlemleri',
+                                          codeBlock('yaml', limit.operations.map((o, i) => `${i++}. ${o}`).join('\n')),
+                                      ].join('\n')
+                                    : undefined,
+                            ].join('\n'),
+                        ),
+                    ],
+                });
             }
         } catch (error) {
             console.error('Guild Sticker Delete Error:', error);

@@ -166,6 +166,7 @@ const Safe: Guard.ICommand = {
                 });
                 return;
             }
+
             const targetName = bold(target instanceof Role ? target.name : target.username);
             const targetType = target instanceof Role ? 'rol' : 'kullanıcı';
             message.channel.send({

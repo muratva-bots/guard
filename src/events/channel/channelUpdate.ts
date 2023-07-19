@@ -1,6 +1,15 @@
 import { LimitFlags, SafeFlags } from '@guard-bot/enums';
 import { ChannelModel } from '@guard-bot/models';
-import { AuditLogEvent, Events, GuildChannel, bold, inlineCode } from 'discord.js';
+import {
+    AuditLogEvent,
+    EmbedBuilder,
+    Events,
+    GuildChannel,
+    bold,
+    codeBlock,
+    inlineCode,
+    roleMention,
+} from 'discord.js';
 
 const ChannelUpdate: Guard.IEvent = {
     name: Events.ChannelUpdate,
@@ -23,12 +32,18 @@ const ChannelUpdate: Guard.IEvent = {
             ];
             if (safe.includes(SafeFlags.Full)) return;
 
+            const embed = new EmbedBuilder({ color: client.utils.getRandomColor() });
+
             const limit = client.utils.checkLimits({
                 userId: entry.executor.id,
                 type: LimitFlags.Channel,
                 limit: guildData.settings.channelLimitCount,
                 time: guildData.settings.channelLimitTime,
                 canCheck: safe.includes(SafeFlags.Channel),
+                operation: `${new Date().toLocaleDateString('tr-TR', {
+                    hour: 'numeric',
+                    minute: 'numeric',
+                })} -> Kanal Güncelleme`,
             });
             if (limit) {
                 if ((newChannel as GuildChannel).guild.publicUpdatesChannel) {
@@ -38,7 +53,9 @@ const ChannelUpdate: Guard.IEvent = {
                     )} hakkından birini kullandığı için uyarıldı. Kalan limit ${inlineCode(
                         remainingCount.toString(),
                     )}. (${inlineCode(`${limit.currentCount}/${limit.maxCount}`)})`;
-                    (newChannel as GuildChannel).guild.publicUpdatesChannel.send({ content });
+                    (newChannel as GuildChannel).guild.publicUpdatesChannel.send({
+                        embeds: [embed.setDescription(content)],
+                    });
                 }
                 return;
             }
@@ -63,11 +80,25 @@ const ChannelUpdate: Guard.IEvent = {
             }
 
             if (oldChannel.guild.publicUpdatesChannel) {
-                const channelName = bold(oldChannel.name);
+                const authorName = `${entry.executor} (${inlineCode(entry.executorId)})`;
+                const channelName = `${oldChannel} (${inlineCode(oldChannel.id)})`;
                 const action = safe.length ? 'güncelleyerek limite ulaştı' : 'güncelledi';
-                oldChannel.guild.publicUpdatesChannel.send(
-                    `@everyone ${entry.executor} adlı kullanıcı ${channelName} adlı kanalı ${action} ve yasaklandı.`,
-                );
+                oldChannel.guild.publicUpdatesChannel.send({
+                    content: roleMention(oldChannel.guildId),
+                    embeds: [
+                        embed.setDescription(
+                            [
+                                `${authorName} adlı kullanıcı ${channelName} adlı kanalı ${action} ve yasaklandı.`,
+                                safe.includes(SafeFlags.General)
+                                    ? [
+                                          '# Limite Yakalanmadan Önceki İşlemleri',
+                                          codeBlock('yaml', limit.operations.map((o, i) => `${i++}. ${o}`).join('\n')),
+                                      ].join('\n')
+                                    : undefined,
+                            ].join('\n'),
+                        ),
+                    ],
+                });
             }
         } catch (error) {
             console.error('Channel Update Error:', error);

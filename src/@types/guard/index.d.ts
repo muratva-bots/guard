@@ -8,7 +8,7 @@ declare global {
         export type ArgsOf<K extends EventKeys> = ClientEvents[K];
 
         export interface ILimit {
-            count: number;
+            operations: string[];
             lastDate: number;
         }
 

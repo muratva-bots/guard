@@ -1,5 +1,5 @@
 import { SafeFlags } from '@guard-bot/enums';
-import { AuditLogEvent, Events, bold } from 'discord.js';
+import { AuditLogEvent, EmbedBuilder, Events, bold, inlineCode, roleMention } from 'discord.js';
 
 const GuildMemberAdd: Guard.IEvent = {
     name: Events.GuildMemberAdd,
@@ -30,11 +30,18 @@ const GuildMemberAdd: Guard.IEvent = {
             await member.guild.members.ban(member.id, { reason: 'Koruma!' });
 
             if (member.guild.publicUpdatesChannel) {
-                const userName = bold(member.user.tag);
-                const action = safe.length ? 'ekledi limite ulaştı' : 'ekledi';
-                member.guild.publicUpdatesChannel.send(
-                    `@everyone ${entry.executor} adlı kullanıcı ${userName} adlı botu ${action} ve yasaklandı.`,
-                );
+                const authorName = `${entry.executor} (${inlineCode(entry.executorId)})`;
+                const memberName = `${member} (${inlineCode(member.id)})`;
+                const action = safe.length ? 'ekleyerek limite ulaştı' : 'ekledi';
+                member.guild.publicUpdatesChannel.send({
+                    content: roleMention(member.guild.id),
+                    embeds: [
+                        new EmbedBuilder({
+                            color: client.utils.getRandomColor(),
+                            description: `${authorName} adlı kullanıcı ${memberName} adlı botu ${action} ve yasaklandı.`,
+                        }),
+                    ],
+                });
             }
         } catch (error) {
             console.error('Guild Member Add Error:', error);

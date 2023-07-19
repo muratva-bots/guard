@@ -1,5 +1,5 @@
 import { LimitFlags, SafeFlags } from '@guard-bot/enums';
-import { AuditLogEvent, Events, bold, inlineCode } from 'discord.js';
+import { AuditLogEvent, EmbedBuilder, Events, bold, codeBlock, inlineCode, roleMention } from 'discord.js';
 
 const GuildEmojiCreate: Guard.IEvent = {
     name: Events.GuildEmojiCreate,
@@ -20,12 +20,18 @@ const GuildEmojiCreate: Guard.IEvent = {
             ];
             if (safe.includes(SafeFlags.Full)) return;
 
+            const embed = new EmbedBuilder({ color: client.utils.getRandomColor() });
+
             const limit = client.utils.checkLimits({
                 userId: entry.executor.id,
                 type: LimitFlags.Emoji,
                 limit: guildData.settings.emojiLimitCount,
                 time: guildData.settings.emojiLimitTime,
                 canCheck: safe.includes(SafeFlags.Emoji),
+                operation: `${new Date().toLocaleDateString('tr-TR', {
+                    hour: 'numeric',
+                    minute: 'numeric',
+                })} -> Emoji Oluşturma`,
             });
             if (limit) {
                 if (emoji.guild.publicUpdatesChannel) {
@@ -35,7 +41,7 @@ const GuildEmojiCreate: Guard.IEvent = {
                     )} hakkından birini kullandığı için uyarıldı. Kalan limit ${inlineCode(
                         remainingCount.toString(),
                     )}. (${inlineCode(`${limit.currentCount}/${limit.maxCount}`)})`;
-                    emoji.guild.publicUpdatesChannel.send({ content });
+                    emoji.guild.publicUpdatesChannel.send({ embeds: [embed.setDescription(content)] });
                 }
                 return;
             }
@@ -43,11 +49,25 @@ const GuildEmojiCreate: Guard.IEvent = {
             await emoji.delete();
 
             if (emoji.guild.publicUpdatesChannel) {
-                const emojiName = `${emoji} (${inlineCode(emoji.name)} - ${inlineCode(emoji.id)})`;
-                const action = safe.length ? 'ekledi limite ulaştı' : 'ekledi';
-                emoji.guild.publicUpdatesChannel.send(
-                    `@everyone ${entry.executor} adlı kullanıcı ${emojiName} adlı emojiyi ${action} ve yasaklandı.`,
-                );
+                const authorName = `${entry.executor} (${inlineCode(entry.executorId)})`;
+                const emojiName = `${emoji} (${inlineCode(emoji.id)})`;
+                const action = safe.length ? 'oluşturarak limite ulaştı' : 'oluşturdu';
+                emoji.guild.publicUpdatesChannel.send({
+                    content: roleMention(emoji.guild.id),
+                    embeds: [
+                        embed.setDescription(
+                            [
+                                `${authorName} adlı kullanıcı ${emojiName} adlı emojiyi ${action} ve yasaklandı.`,
+                                safe.includes(SafeFlags.General)
+                                    ? [
+                                          '# Limite Yakalanmadan Önceki İşlemleri',
+                                          codeBlock('yaml', limit.operations.map((o, i) => `${i++}. ${o}`).join('\n')),
+                                      ].join('\n')
+                                    : undefined,
+                            ].join('\n'),
+                        ),
+                    ],
+                });
             }
         } catch (error) {
             console.error('Guild Emoji Create Error:', error);

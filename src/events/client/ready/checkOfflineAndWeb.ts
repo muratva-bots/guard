@@ -1,6 +1,6 @@
 import { GuildModel } from '@guard-bot/models';
 import { Client } from '@guard-bot/structures';
-import { EmbedBuilder, Guild, inlineCode } from 'discord.js';
+import { EmbedBuilder, Guild, codeBlock, inlineCode } from 'discord.js';
 
 async function checkOfflineAndWeb(client: Client, guild: Guild) {
     const guildData = client.servers.get(guild.id);
@@ -31,11 +31,22 @@ async function checkOfflineAndWeb(client: Client, guild: Guild) {
             if (guild.publicUpdatesChannel) {
                 guild.publicUpdatesChannel.send({
                     embeds: [
-                        embed.setTitle(m.presence?.clientStatus.web ? 'Web Girişi!' : 'Çevrimıdışı!').setDescription(
-                            `${m} (${inlineCode(m.id)}) adlı kullanıcının ${m.roles.cache
-                                .filter((r) => !r.managed)
-                                .map((r) => r)
-                                .join(',')} rolleri çekildi!`,
+                        embed.setDescription(
+                            [
+                                `${m} (${inlineCode(m.id)}) adlı kullanıcı ${
+                                    guildData.settings.web ? 'internet sitesinden giriş yaptığı' : 'çevrimdışı olduğu'
+                                } için yetkileri çekildi.`,
+                                codeBlock(
+                                    'yaml',
+                                    [
+                                        '# Çekilen Rolleri',
+                                        m.roles.cache
+                                            .filter((r) => !r.managed)
+                                            .map((r) => `→ ${r.name}`)
+                                            .join('\n'),
+                                    ].join('\n'),
+                                ),
+                            ].join('\n'),
                         ),
                     ],
                 });

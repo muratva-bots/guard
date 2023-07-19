@@ -1,12 +1,12 @@
 import { LimitFlags, SafeFlags } from '@guard-bot/enums';
-import { AuditLogEvent, Events, bold, inlineCode } from 'discord.js';
+import { AuditLogEvent, EmbedBuilder, Events, bold, codeBlock, inlineCode, roleMention } from 'discord.js';
 
 const WebhookUpdate: Guard.IEvent = {
     name: Events.WebhooksUpdate,
     execute: async (client, [channel]: Guard.ArgsOf<Events.WebhooksUpdate>) => {
         try {
             const guildData = client.servers.get(channel.guildId);
-            if (!guildData || !guildData.settings.channel) return;
+            if (!guildData || !guildData.settings.webhook) return;
 
             const entry = await channel.guild
                 .fetchAuditLogs({ limit: 1, type: AuditLogEvent.WebhookUpdate })
@@ -20,12 +20,18 @@ const WebhookUpdate: Guard.IEvent = {
             ];
             if (safe.includes(SafeFlags.Full)) return;
 
+            const embed = new EmbedBuilder({ color: client.utils.getRandomColor() });
+
             const limit = client.utils.checkLimits({
                 userId: entry.executor.id,
                 type: LimitFlags.General,
                 limit: guildData.settings.generalLimitCount,
                 time: guildData.settings.generalLimitTime,
                 canCheck: safe.includes(SafeFlags.General),
+                operation: `${new Date().toLocaleDateString('tr-TR', {
+                    hour: 'numeric',
+                    minute: 'numeric',
+                })} -> Webhook Güncelleme`,
             });
             if (limit) {
                 if (channel.guild.publicUpdatesChannel) {
@@ -35,7 +41,7 @@ const WebhookUpdate: Guard.IEvent = {
                     )} hakkından birini kullandığı için uyarıldı. Kalan limit ${inlineCode(
                         remainingCount.toString(),
                     )}. (${inlineCode(`${limit.currentCount}/${limit.maxCount}`)})`;
-                    channel.guild.publicUpdatesChannel.send({ content });
+                    channel.guild.publicUpdatesChannel.send({ embeds: [embed.setDescription(content)] });
                 }
                 return;
             }
@@ -50,11 +56,25 @@ const WebhookUpdate: Guard.IEvent = {
             await webhook.edit({ name: webhook.name, avatar: webhook.avatar });
 
             if (channel.guild.publicUpdatesChannel) {
-                const webhookName = bold(channel.name);
+                const authorName = `${entry.executor} (${inlineCode(entry.executorId)})`;
+                const webhookName = `${webhook} (${inlineCode(webhook.id)})`;
                 const action = safe.length ? 'güncelledi limite ulaştı' : 'güncelledi';
-                channel.guild.publicUpdatesChannel.send(
-                    `@everyone ${entry.executor} adlı kullanıcı ${webhookName} adlı webhooku ${action} ve yasaklandı.`,
-                );
+                channel.guild.publicUpdatesChannel.send({
+                    content: roleMention(channel.guildId),
+                    embeds: [
+                        embed.setDescription(
+                            [
+                                `${authorName} adlı kullanıcı ${webhookName} adlı webhooku ${action} ve yasaklandı.`,
+                                safe.includes(SafeFlags.General)
+                                    ? [
+                                          '# Limite Yakalanmadan Önceki İşlemleri',
+                                          codeBlock('yaml', limit.operations.map((o, i) => `${i++}. ${o}`).join('\n')),
+                                      ].join('\n')
+                                    : undefined,
+                            ].join('\n'),
+                        ),
+                    ],
+                });
             }
         } catch (error) {
             console.error('Webhook Update Error:', error);

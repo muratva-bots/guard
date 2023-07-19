@@ -49,40 +49,41 @@ export class Utils {
     checkLimits({
         userId,
         type,
-        limit,
-        time,
+        limit = this.client.config.DEFAULTS.LIMIT.COUNT,
+        time = this.client.config.DEFAULTS.LIMIT.TIME,
         canCheck,
+        operation,
     }: {
         userId: string;
         type: string;
         limit?: number;
         time?: number;
         canCheck: boolean;
+        operation: string;
     }) {
         if (!canCheck) return undefined;
-
-        if (!limit) limit = this.client.config.DEFAULTS.LIMIT.COUNT;
-        if (!time) time = this.client.config.DEFAULTS.LIMIT.TIME;
 
         const now = Date.now().valueOf();
         const key = `${userId}_${type}`;
         const userLimits = this.client.limits.get(key);
         if (!userLimits) {
-            this.client.limits.set(key, { count: 1, lastDate: now });
+            this.client.limits.set(key, { operations: [operation], lastDate: now });
             return {
                 maxCount: limit,
                 currentCount: 1,
+                operations: userLimits.operations,
             };
         }
 
-        userLimits.count++;
+        userLimits.operations.push(operation);
         const diff = now - userLimits.lastDate;
-        if (diff < time && userLimits.count >= limit) return undefined;
+        if (diff < time && userLimits.operations.length >= limit) return undefined;
 
-        if (diff > time) this.client.limits.set(key, { count: 1, lastDate: now });
+        if (diff > time) this.client.limits.set(key, { operations: [operation], lastDate: now });
         return {
             maxCount: limit,
-            currentCount: userLimits.count,
+            currentCount: userLimits.operations.length,
+            operations: userLimits.operations,
         };
     }
 

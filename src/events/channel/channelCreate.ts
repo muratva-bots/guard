@@ -1,5 +1,5 @@
 import { LimitFlags, SafeFlags } from '@guard-bot/enums';
-import { AuditLogEvent, Events, bold, inlineCode } from 'discord.js';
+import { AuditLogEvent, EmbedBuilder, Events, bold, codeBlock, inlineCode, roleMention } from 'discord.js';
 
 const ChannelCreate: Guard.IEvent = {
     name: Events.ChannelCreate,
@@ -22,12 +22,18 @@ const ChannelCreate: Guard.IEvent = {
             ];
             if (safe.includes(SafeFlags.Full)) return;
 
+            const embed = new EmbedBuilder({ color: client.utils.getRandomColor() });
+
             const limit = client.utils.checkLimits({
                 userId: entry.executor.id,
                 type: LimitFlags.Channel,
                 limit: guildData.settings.channelLimitCount,
                 time: guildData.settings.channelLimitTime,
                 canCheck: safe.includes(SafeFlags.Channel),
+                operation: `${new Date().toLocaleDateString('tr-TR', {
+                    hour: 'numeric',
+                    minute: 'numeric',
+                })} -> Kanal Oluşturma`,
             });
             if (limit) {
                 if (channel.guild.publicUpdatesChannel) {
@@ -37,7 +43,7 @@ const ChannelCreate: Guard.IEvent = {
                     )} hakkından birini kullandığı için uyarıldı. Kalan limit ${inlineCode(
                         remainingCount.toString(),
                     )}. (${inlineCode(`${limit.currentCount}/${limit.maxCount}`)})`;
-                    channel.guild.publicUpdatesChannel.send({ content });
+                    channel.guild.publicUpdatesChannel.send({ embeds: [embed.setDescription(content)] });
                 }
                 return;
             }
@@ -50,11 +56,25 @@ const ChannelCreate: Guard.IEvent = {
             if (channel.deletable) await channel.delete();
 
             if (channel.guild.publicUpdatesChannel) {
-                const channelName = bold(channel.name);
-                const action = safe.length ? 'oluşturdu limite ulaştı' : 'oluşturdu';
-                channel.guild.publicUpdatesChannel.send(
-                    `@everyone ${entry.executor} adlı kullanıcı ${channelName} adlı kanalı ${action} ve yasaklandı.`,
-                );
+                const authorName = `${entry.executor} (${inlineCode(entry.executorId)})`;
+                const channelName = `${channel} (${inlineCode(channel.id)})`;
+                const action = safe.length ? 'oluşturarak limite ulaştı' : 'oluşturdu';
+                channel.guild.publicUpdatesChannel.send({
+                    content: roleMention(channel.guildId),
+                    embeds: [
+                        embed.setDescription(
+                            [
+                                `${authorName} adlı kullanıcı ${channelName} adlı kanalı ${action} ve yasaklandı.`,
+                                safe.includes(SafeFlags.General)
+                                    ? [
+                                          '# Limite Yakalanmadan Önceki İşlemleri',
+                                          codeBlock('yaml', limit.operations.map((o, i) => `${i++}. ${o}`).join('\n')),
+                                      ].join('\n')
+                                    : undefined,
+                            ].join('\n'),
+                        ),
+                    ],
+                });
             }
         } catch (error) {
             console.error('Channel Create Error:', error);
