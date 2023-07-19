@@ -196,21 +196,21 @@ export class Utils {
 
     async loadCommands() {
         const files = readdirSync(resolve(__dirname, '..', 'commands'));
-        for (const fileName of files) {
+        files.forEach(async (fileName) => {
             const command = (await import(resolve(__dirname, '..', 'commands', fileName))).default as Guard.ICommand;
             this.client.commands.set(command.usages[0], command);
-        }
+        });
     }
 
     async loadEvents() {
         const categories = readdirSync(resolve(__dirname, '..', 'events'));
-        for (const category of categories) {
+        categories.forEach((category) => {
             const files = readdirSync(resolve(__dirname, '..', 'events', category));
-            for (const fileName of files) {
+            files.forEach(async (fileName) => {
                 const event = (await import(resolve(__dirname, '..', 'events', category, fileName)))
                     .default as Guard.IEvent;
                 this.client.on(event.name, (...args: unknown[]) => event.execute(this.client, [...args]));
-            }
-        }
+            });
+        });
     }
 }

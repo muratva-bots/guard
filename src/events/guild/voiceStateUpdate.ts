@@ -5,6 +5,8 @@ const VoiceStateUpdate: Guard.IEvent = {
     name: Events.VoiceStateUpdate,
     execute: async (client, [, newState]: Guard.ArgsOf<Events.VoiceStateUpdate>) => {
         try {
+            if (newState.channelId) return;
+
             const guildData = client.servers.get(newState.guild.id);
             if (!guildData || !guildData.settings.guard.voiceKick) return;
 
