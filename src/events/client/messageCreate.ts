@@ -1,3 +1,4 @@
+import { SafeFlags } from '@guard-bot/enums';
 const MessageCreate: Guard.IEvent = {
     name: 'messageCreate',
     execute: (client, [message]: Guard.ArgsOf<'messageCreate'>) => {
