@@ -1,6 +1,6 @@
+import { ISettings } from '@guard-bot/models';
 import { Client } from '@guard-bot/structures';
 import { ClientEvents, Message } from 'discord.js';
-import { ISettings } from 'src/models/guild/dto/ISettings';
 
 declare global {
     namespace Guard {

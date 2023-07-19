@@ -72,10 +72,9 @@ const Safe: Guard.ICommand = {
                         custom_id: 'target',
                         max_values: 25,
                         min_values: 1,
-                        placeholder: 'Kullanıcı ara...',
+                        placeholder: 'Kullanıcı veya rol ara...',
                     }),
-                ],
-                type: ComponentType.MentionableSelect,
+                ]
             });
 
             const question = await message.channel.send({
