@@ -16,18 +16,18 @@ const Permissions: Guard.ICommand = {
 
         const data = (await GuildModel.findOne({ id: message.guildId })) || new GuildModel({ id: message.guildId });
         if (operation === 'aç') {
-            data.guard.permissions.forEach((permission) => {
+            data.settings.guard.permissions.forEach((permission) => {
                 const role = message.guild.roles.cache.find((r) => r.name === permission.name);
                 if (role) role.setPermissions(permission.allow);
             });
         } else {
-            data.guard.permissions = [];
+            data.settings.guard.permissions = [];
 
             const dangerRoles = message.guild.roles.cache.filter(
                 (role) => client.utils.dangerPerms.some((perm) => role.permissions.has(perm)) && !role.managed,
             );
             for (const role of dangerRoles.values()) {
-                data.guard.permissions.push({
+                data.settings.guard.permissions.push({
                     name: role.name,
                     allow: role.permissions.toArray(),
                 });
