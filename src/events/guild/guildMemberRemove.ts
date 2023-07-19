@@ -6,7 +6,7 @@ const GuildMemberRemove: Guard.IEvent = {
     execute: async (client, [member]: Guard.ArgsOf<Events.GuildMemberRemove>) => {
         try {
             const guildData = client.servers.get(member.guild.id);
-            if (!guildData || !guildData.settings.guard.banKick) return;
+            if (!guildData || !guildData.settings.banKick) return;
 
             const { entry, entryType } = await getEntry(member.guild);
             if (!entry) return;
@@ -21,9 +21,9 @@ const GuildMemberRemove: Guard.IEvent = {
             const limit = client.utils.checkLimits({
                 userId: entry.executor.id,
                 type: LimitFlags.BanKick,
-                limit: guildData.settings.guard.banKickLimitCount,
-                time: guildData.settings.guard.banKickLimitTime,
-                canCheck: safe.includes(SafeFlags.BanKick),
+                limit: guildData.settings.banKickLimitCount,
+                time: guildData.settings.banKickLimitTime,
+                canCheck: safe.includes(SafeFlags.BanKick) && entryType !== 'PRUNE',
             });
             if (limit) {
                 if (member.guild.publicUpdatesChannel) {

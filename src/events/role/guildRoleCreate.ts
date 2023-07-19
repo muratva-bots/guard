@@ -6,7 +6,7 @@ const GuildRoleCreate: Guard.IEvent = {
     execute: async (client, [role]: Guard.ArgsOf<Events.GuildRoleCreate>) => {
         try {
             const guildData = client.servers.get(role.guild.id);
-            if (!guildData || !guildData.settings.guard.role) return;
+            if (!guildData || !guildData.settings.role) return;
 
             const entry = await role.guild
                 .fetchAuditLogs({ limit: 1, type: AuditLogEvent.RoleCreate })
@@ -23,8 +23,8 @@ const GuildRoleCreate: Guard.IEvent = {
             const limit = client.utils.checkLimits({
                 userId: entry.executor.id,
                 type: LimitFlags.Role,
-                limit: guildData.settings.guard.roleLimitCount,
-                time: guildData.settings.guard.roleLimitTime,
+                limit: guildData.settings.roleLimitCount,
+                time: guildData.settings.roleLimitTime,
                 canCheck: safe.includes(SafeFlags.Role),
             });
             if (limit) {

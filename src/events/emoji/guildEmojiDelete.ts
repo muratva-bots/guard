@@ -6,7 +6,7 @@ const GuildEmojiDelete: Guard.IEvent = {
     execute: async (client, [emoji]: Guard.ArgsOf<Events.GuildEmojiDelete>) => {
         try {
             const guildData = client.servers.get(emoji.guild.id);
-            if (!guildData || !guildData.settings.guard.emoji) return;
+            if (!guildData || !guildData.settings.emoji) return;
 
             const entry = await emoji.guild
                 .fetchAuditLogs({ limit: 1, type: AuditLogEvent.EmojiDelete })
@@ -23,8 +23,8 @@ const GuildEmojiDelete: Guard.IEvent = {
             const limit = client.utils.checkLimits({
                 userId: entry.executor.id,
                 type: LimitFlags.Emoji,
-                limit: guildData.settings.guard.emojiLimitCount,
-                time: guildData.settings.guard.emojiLimitTime,
+                limit: guildData.settings.emojiLimitCount,
+                time: guildData.settings.emojiLimitTime,
                 canCheck: safe.includes(SafeFlags.Emoji),
             });
             if (limit) {

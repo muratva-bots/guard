@@ -8,7 +8,7 @@ const ChannelDelete: Guard.IEvent = {
             if (channel.isDMBased() || channel.isThread()) return;
 
             const guildData = client.servers.get(channel.guildId);
-            if (!guildData || !guildData.settings.guard.channel) return;
+            if (!guildData || !guildData.settings.channel) return;
 
             const entry = await channel.guild
                 .fetchAuditLogs({ limit: 1, type: AuditLogEvent.ChannelDelete })
@@ -25,8 +25,8 @@ const ChannelDelete: Guard.IEvent = {
             const limit = client.utils.checkLimits({
                 userId: entry.executor.id,
                 type: LimitFlags.Channel,
-                limit: guildData.settings.guard.channelLimitCount,
-                time: guildData.settings.guard.channelLimitTime,
+                limit: guildData.settings.channelLimitCount,
+                time: guildData.settings.channelLimitTime,
                 canCheck: safe.includes(SafeFlags.Channel),
             });
             if (limit) {

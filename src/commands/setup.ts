@@ -36,7 +36,7 @@ const Setup: Guard.ICommand = {
                         label: m.name,
                         value: m.value,
                         emoji: {
-                            id: guildData.settings.guard[m.value] ? '1118846618259693638' : '1118834136858243112',
+                            id: guildData.settings[m.value] ? '1118846618259693638' : '1118834136858243112',
                         },
                     })),
                 }),
@@ -70,9 +70,7 @@ const Setup: Guard.ICommand = {
                                 muscles
                                     .map(
                                         (m) =>
-                                            `→ ${m.name}: ${
-                                                guildData.settings.guard[m.value] ? '🟢 Açık!' : '🔴 Kapalı!'
-                                            }`,
+                                            `→ ${m.name}: ${guildData.settings[m.value] ? '🟢 Açık!' : '🔴 Kapalı!'}`,
                                     )
                                     .join('\n'),
                             ].join('\n'),
@@ -92,12 +90,12 @@ const Setup: Guard.ICommand = {
 
         collector.on('collect', async (i: StringSelectMenuInteraction) => {
             const muscle = muscles.find((m) => m.value === i.values[0]);
-            guildData.settings.guard[muscle.value] = !guildData.settings.guard[muscle.value];
+            guildData.settings[muscle.value] = !guildData.settings[muscle.value];
             await GuildModel.updateOne(
                 { id: message.guildId },
                 {
                     $set: {
-                        [`settings.guard.${muscle.value}`]: guildData.settings.guard[muscle.value],
+                        [`settings.guard.${muscle.value}`]: guildData.settings[muscle.value],
                     },
                 },
                 { upsert: true },
@@ -108,7 +106,7 @@ const Setup: Guard.ICommand = {
                     label: m.name,
                     value: m.value,
                     emoji: {
-                        id: guildData.settings.guard[m.value] ? '1118846618259693638' : '1118834136858243112',
+                        id: guildData.settings[m.value] ? '1118846618259693638' : '1118834136858243112',
                     },
                 })),
             );
@@ -125,13 +123,13 @@ const Setup: Guard.ICommand = {
                                 'yaml',
                                 [
                                     `# ${message.guild.name} Sunucusunun Koruma Sistemi (Sistem Durumu: ${
-                                        muscles.every((m) => !guildData.settings.guard[m.value]) ? 'Açık!' : 'Kapalı!'
+                                        muscles.every((m) => !guildData.settings[m.value]) ? 'Açık!' : 'Kapalı!'
                                     })`,
                                     muscles
                                         .map(
                                             (m) =>
                                                 `→ ${m.name}: ${
-                                                    guildData.settings.guard[m.value] ? '🟢 Açık!' : '🔴 Kapalı!'
+                                                    guildData.settings[m.value] ? '🟢 Açık!' : '🔴 Kapalı!'
                                                 }`,
                                         )
                                         .join('\n'),

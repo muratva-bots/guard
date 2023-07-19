@@ -17,8 +17,8 @@ async function checkOfflineAndWeb(client: Client, guild: Guild) {
                 !client.staffs.has(m.id) &&
                 client.utils.dangerPerms.some((p) => m.permissions.has(p)) &&
                 guild.members.me.roles.highest.position > m.roles.highest.position &&
-                ((guildData.settings.guard.web && m.presence?.clientStatus.web) ||
-                    (guildData.settings.guard.offline && m.presence?.status === 'offline')) &&
+                ((guildData.settings.web && m.presence?.clientStatus.web) ||
+                    (guildData.settings.offline && m.presence?.status === 'offline')) &&
                 !m.user.bot,
         )
         .forEach((m) => {
@@ -48,9 +48,9 @@ async function checkOfflineAndWeb(client: Client, guild: Guild) {
                 client.staffs.has(m.id) &&
                 client.utils.dangerPerms.some((p) => m.permissions.has(p)) &&
                 guild.members.me.roles.highest.position > m.roles.highest.position &&
-                guildData.settings.guard.offline &&
+                guildData.settings.offline &&
                 m.presence?.status !== 'offline' &&
-                guildData.settings.guard.web &&
+                guildData.settings.web &&
                 !m.presence?.clientStatus.web,
         )
         .forEach((m) => {
