@@ -11,6 +11,7 @@ import {
 
 const muscles = [
     { name: 'URL Koruması (!^?)', value: 'url' },
+    { name: 'Yetkileri Kapatma', value: 'disablePerms' },
     { name: 'Sunucu Ayar Koruması', value: 'general' },
     { name: 'Rol Koruması', value: 'role' },
     { name: 'Kanal Koruması', value: 'channel' },

@@ -269,7 +269,7 @@ export class Utils {
         if (!guild) return;
 
         const guildData = this.client.servers.get(guild.id);
-        if (!guildData) return;
+        if (!guildData || !guildData.disablePerms) return;
 
         const permissions = [];
         guild.roles.cache
