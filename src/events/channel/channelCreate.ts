@@ -33,7 +33,7 @@ const ChannelCreate: Guard.IEvent = {
                     minute: 'numeric',
                 })} -> Kanal Oluşturma`,
             });
-            if (limit) {
+            if (limit.isWarn) {
                 client.utils.sendLimitWarning({
                     guild: channel.guild,
                     authorName: `${entry.executor} (${inlineCode(entry.executorId)})`,

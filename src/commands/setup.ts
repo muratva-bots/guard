@@ -88,6 +88,8 @@ const Setup: Guard.ICommand = {
         });
 
         collector.on('collect', async (i: StringSelectMenuInteraction) => {
+            i.deferUpdate();
+
             i.values.forEach((v) => {
                 const muscle = muscles.find((m) => m.value === v);
                 guildData.settings[muscle.value] = !guildData.settings[muscle.value];

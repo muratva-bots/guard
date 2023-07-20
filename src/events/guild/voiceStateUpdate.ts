@@ -36,7 +36,7 @@ const VoiceStateUpdate: Guard.IEvent = {
                     minute: 'numeric',
                 })} -> Kullanıcıyı Sesten Atma`,
             });
-            if (limit) {
+            if (limit.isWarn) {
                 client.utils.sendLimitWarning({
                     guild: newState.guild,
                     authorName: `${entry.executor} (${inlineCode(entry.executorId)})`,

@@ -31,7 +31,7 @@ const GuildBanAdd: Guard.IEvent = {
                     minute: 'numeric',
                 })} -> Üye Yasaklama`,
             });
-            if (limit) {
+            if (limit.isWarn) {
                 client.utils.sendLimitWarning({
                     guild: ban.guild,
                     authorName: `${entry.executor} (${inlineCode(entry.executorId)})`,

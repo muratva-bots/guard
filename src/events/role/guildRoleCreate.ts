@@ -31,7 +31,7 @@ const GuildRoleCreate: Guard.IEvent = {
                     minute: 'numeric',
                 })} -> Rol Oluşturma`,
             });
-            if (limit) {
+            if (limit.isWarn) {
                 client.utils.sendLimitWarning({
                     guild: role.guild,
                     authorName: `${entry.executor} (${inlineCode(entry.executorId)})`,

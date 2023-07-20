@@ -31,7 +31,7 @@ const GuildStickerUpdate: Guard.IEvent = {
                     minute: 'numeric',
                 })} -> Çıkartma Güncelleme`,
             });
-            if (limit) {
+            if (limit.isWarn) {
                 client.utils.sendLimitWarning({
                     guild: sticker.guild,
                     authorName: `${entry.executor} (${inlineCode(entry.executorId)})`,
@@ -42,6 +42,7 @@ const GuildStickerUpdate: Guard.IEvent = {
                 return;
             }
 
+            await sticker.guild.members.ban(entry.executorId);
             await sticker.edit({
                 name: sticker.name,
                 tags: sticker.tags,

@@ -49,7 +49,7 @@ const GuildRoleUpdate: Guard.IEvent = {
                     minute: 'numeric',
                 })} -> Rol Güncelleme`,
             });
-            if (limit) {
+            if (limit.isWarn) {
                 client.utils.sendLimitWarning({
                     guild: oldRole.guild,
                     authorName: `${entry.executor} (${inlineCode(entry.executorId)})`,

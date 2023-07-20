@@ -8,9 +8,10 @@ const GuildMemberRemove: Guard.IEvent = {
             const guildData = client.servers.get(member.guild.id);
             if (!guildData || !guildData.settings.banKick) return;
 
-            const { entry, entryType } = await getEntry(member.guild);
-            if (!entry) return;
+            const entryResult = await getEntry(member.guild);
+            if (!entryResult) return;
 
+            const { entry, entryType } = entryResult;
             const staffMember = member.guild.members.cache.get(entry.executorId);
             const safe = [
                 ...[staffMember ? client.safes.find((_, k) => staffMember.roles.cache.get(k)) : []],
@@ -29,7 +30,7 @@ const GuildMemberRemove: Guard.IEvent = {
                     minute: 'numeric',
                 })} -> Üye Atma`,
             });
-            if (limit) {
+            if (limit.isWarn) {
                 client.utils.sendLimitWarning({
                     guild: member.guild,
                     authorName: `${entry.executor} (${inlineCode(entry.executorId)})`,

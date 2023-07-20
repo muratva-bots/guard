@@ -31,7 +31,7 @@ const GuildUpdate: Guard.IEvent = {
                     minute: 'numeric',
                 })} -> Sunucuyu Güncelleme`,
             });
-            if (limit) {
+            if (limit.isWarn) {
                 client.utils.sendLimitWarning({
                     guild: oldGuild,
                     authorName: `${entry.executor} (${inlineCode(entry.executorId)})`,

@@ -31,7 +31,7 @@ const WebhookDelete: Guard.IEvent = {
                     minute: 'numeric',
                 })} -> Webhook Silme`,
             });
-            if (limit) {
+            if (limit.isWarn) {
                 client.utils.sendLimitWarning({
                     guild: channel.guild,
                     authorName: `${entry.executor} (${inlineCode(entry.executorId)})`,

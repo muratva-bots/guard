@@ -26,7 +26,7 @@ export async function checkChannels(question: Message, row: ActionRowBuilder<But
         })) as GuildChannel;
         await RoleModel.updateMany(
             { 'channelOverwrites.$.id': deletedChannel.id },
-            { 'channelOverwrites.$.id': newChannel.id },
+            { $set: { 'channelOverwrites.$.id': newChannel.id } },
         );
         await ChannelModel.updateOne({ id: deletedChannel.id }, { id: newChannel.id });
 
@@ -34,7 +34,7 @@ export async function checkChannels(question: Message, row: ActionRowBuilder<But
             for (const parentChannel of deletedChannels.filter((channel) => channel.parent === deletedChannel.id)) {
                 parentChannel.parent = newChannel.id;
             }
-            await ChannelModel.updateMany({ parent: deletedChannel.id }, { parent: newChannel.id });
+            await ChannelModel.updateMany({ parent: deletedChannel.id }, { $set: { parent: newChannel.id } });
 
             const parentChannels = channels.filter((channel) => channel.parent === deletedChannel.id);
             for (const parentChannel of parentChannels) {

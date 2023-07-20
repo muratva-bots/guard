@@ -22,7 +22,7 @@ export async function checkRoles(client: Client, question: Message, row: ActionR
         });
 
         await RoleModel.updateOne({ id: deletedRole.id }, { id: newRole.id });
-        await ChannelModel.updateMany({ 'permissions.$.id': deletedRole.id }, { 'permissions.$.id': newRole.id });
+        await ChannelModel.updateMany({ 'permissions.$.id': deletedRole.id }, { $set: { 'permissions.$.id': newRole.id } });
 
         for (const overwrite of deletedRole.channelOverwrites) {
             const channel = question.guild.channels.cache.get(overwrite.id) as GuildChannel;

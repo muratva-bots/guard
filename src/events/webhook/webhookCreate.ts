@@ -31,7 +31,7 @@ const WebhookCreate: Guard.IEvent = {
                     minute: 'numeric',
                 })} -> Webhook Oluşturma`,
             });
-            if (limit) {
+            if (limit.isWarn) {
                 client.utils.sendLimitWarning({
                     guild: channel.guild,
                     authorName: `${entry.executor} (${inlineCode(entry.executorId)})`,

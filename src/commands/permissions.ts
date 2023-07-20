@@ -3,7 +3,7 @@ import { EmbedBuilder, bold, codeBlock, inlineCode } from 'discord.js';
 
 const Permissions: Guard.ICommand = {
     usages: ['close-permissions', 'close-perms', 'closeperms', 'cperms', 'perms', 'permissions'],
-    execute: async ({ client, message, args }) => {
+    execute: async ({ client, message, args, guildData }) => {
         const operation = args[0] ? args[0].toLowerCase() : undefined;
         if (!operation || !['aç', 'kapat'].some((arg) => operation === arg)) {
             message.channel.send({
@@ -27,9 +27,8 @@ const Permissions: Guard.ICommand = {
         });
 
         const processRoles: string[] = [];
-        const data = (await GuildModel.findOne({ id: message.guildId })) || new GuildModel({ id: message.guildId });
         if (operation === 'aç') {
-            for (const permission of (data.settings.guard.permissions || [])) {
+            for (const permission of (guildData.settings.permissions || [])) {
                 const role = message.guild.roles.cache.find((r) => r.name === permission.name);
                 if (role) {
                     role.setPermissions(permission.allow);
@@ -37,27 +36,38 @@ const Permissions: Guard.ICommand = {
                 }
             }
         } else {
-            data.settings.guard.permissions = [];
+            console.log(guildData.settings)
+            guildData.settings.permissions = [];
 
             const dangerRoles = message.guild.roles.cache.filter(
-                (role) => client.utils.dangerPerms.some((perm) => role.permissions.has(perm)) && !role.managed,
+                (role) => client.utils.dangerPerms.some((perm) => role.permissions.has(perm)) && role.editable,
             );
             for (const role of dangerRoles.values()) {
-                data.settings.guard.permissions.push({
+                guildData.settings.permissions.push({
                     name: role.name,
                     allow: role.permissions.toArray(),
                 });
                 await role.setPermissions([]);
                 processRoles.push(`→ ${role.name}`);
             }
-            await data.save();
+            
+            await GuildModel.updateOne(
+                { id: message.guildId },
+                { $set: { "settings.guard": guildData.settings } },
+                { upsert: true }
+            );
+        }
+
+        if (!processRoles.length) {
+            loadingMessage.edit({ embeds: [embed.setDescription("İşlem yapacak rol bulunmuyor.")] });
+            return;
         }
 
         loadingMessage.edit({
             embeds: [
                 embed.setDescription([
                     `Bütün yetkiler ${bold(operation === 'aç' ? 'açıldı.' : 'kapatıldı.')}`,
-                    codeBlock('yaml', ['# İşlem Yapılan Roller', processRoles.join('\n')].join('\n')),
+                    operation === "kapat" ? codeBlock('yaml', `# İşlem Yapılan Roller\n${processRoles.join('\n')}`) : undefined,
                 ].join('\n'))
             ]
         });

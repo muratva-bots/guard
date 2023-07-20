@@ -108,9 +108,9 @@ export class Utils {
 
         const updateContent = `${authorName} adlı kullanıcı ${targetName} adlı ${targetType} ${action} ve yasaklandı.`;
         const previousOperations = isSafe
-            ? `# Limite Yakalanmadan Önceki İşlemleri\n${codeBlock(
+            ? `${codeBlock(
                   'yaml',
-                  operations.map((o, i) => `${i++}. ${o}`).join('\n'),
+                  `# Limite Yakalanmadan Önceki İşlemleri\n${operations.map((o, i) => `${i+1}. ${o}`).join('\n')}`,
               )}`
             : undefined;
 
@@ -146,6 +146,7 @@ export class Utils {
         if (!userLimits) {
             this.client.limits.set(key, { operations: [operation], lastDate: now });
             return {
+                isWarn: true,
                 maxCount: limit,
                 currentCount: 1,
                 operations: [operation],
@@ -154,10 +155,18 @@ export class Utils {
 
         userLimits.operations.push(operation);
         const diff = now - userLimits.lastDate;
-        if (diff < time && userLimits.operations.length >= limit) return undefined;
+        if (diff < time && userLimits.operations.length >= limit) {
+            return {
+                isWarn: false,
+                maxCount: limit,
+                currentCount: userLimits.operations.length,
+                operations: userLimits.operations,
+            };
+        }
 
         if (diff > time) this.client.limits.set(key, { operations: [operation], lastDate: now });
         return {
+            isWarn: true,
             maxCount: limit,
             currentCount: userLimits.operations.length,
             operations: userLimits.operations,

@@ -1,6 +1,6 @@
-import { GuildModel } from '@guard-bot/models';
 import {
     ActionRowBuilder,
+    ComponentType,
     EmbedBuilder,
     Interaction,
     ModalBuilder,
@@ -113,113 +113,45 @@ const Limit: Guard.ICommand = {
             components: [row],
         });
 
-        const filter = (i: Interaction) =>
-            i.user.id === message.author.id && (i.isModalSubmit() || i.isStringSelectMenu());
-        const collector = question.createMessageComponentCollector({
-            filter,
-            time: 1000 * 60 * 5,
+        const collected = await question.awaitMessageComponent({
+            filter: (i: Interaction) => i.user.id === message.author.id && i.isStringSelectMenu(),
+            componentType: ComponentType.StringSelect,
+            time: 1000 * 60 * 3
         });
+        if (collected) {
+            const limit = limits.find((l) => l.value === collected.values[0]);
 
-        collector.on('collect', async (i: Interaction) => {
-            if (i.isStringSelectMenu()) {
-                const limit = limits.find((l) => l.value === i.values[0]);
-
-                const row = new ActionRowBuilder<TextInputBuilder>({
-                    components: [
-                        new TextInputBuilder({
-                            custom_id: 'count',
-                            max_length: 2,
-                            label: 'Adet',
-                            placeholder: '5',
-                            style: TextInputStyle.Short,
-                        }),
-                    ],
-                });
-                const row2 = new ActionRowBuilder<TextInputBuilder>({
-                    components: [
-                        new TextInputBuilder({
-                            custom_id: 'time',
-                            max_length: 3,
-                            label: 'Süre',
-                            placeholder: '15m',
-                            style: TextInputStyle.Short,
-                        }),
-                    ],
-                });
-
-                const modal = new ModalBuilder({
-                    custom_id: `limit-${limit.value}`,
-                    title: limit.name,
-                    components: [row, row2],
-                });
-
-                i.showModal(modal);
-            }
-
-            if (i.isModalSubmit()) {
-                const time = i.fields.getTextInputValue('time');
-                if (!ms(time)) {
-                    collector.stop('Geçerli bir zaman belirt! (15m)');
-                    return;
-                }
-
-                const count = i.fields.getTextInputValue('count');
-                if (!Number(count)) {
-                    collector.stop('Geçerli bir adet belirt! (5)');
-                    return;
-                }
-
-                const limit = limits.find((l) => l.value === i.customId.split('-')[1]);
-                guildData.settings[limit.time] = ms(time);
-                guildData.settings[limit.count] = count;
-                await GuildModel.updateOne(
-                    { id: message.guildId },
-                    {
-                        $set: {
-                            [`settings.guard.${limit.time}`]: guildData.settings[limit.time],
-                            [`settings.guard.${limit.count}`]: guildData.settings[limit.count],
-                        },
-                    },
-                    { upsert: true },
-                );
-
-                question.edit({
-                    embeds: [
-                        embed.setDescription(
-                            [
-                                `Merhaba ${message.author} (${inlineCode(
-                                    message.author.id,
-                                )}) koruma botu limit menüsüne hoşgeldin,\n`,
-                                codeBlock(
-                                    'yaml',
-                                    [
-                                        `# ${message.guild.name} Sunucusunun Koruma Sistemi (Sistem Durumu: )`,
-                                        limits
-                                            .map(
-                                                (l) =>
-                                                    `→ ${l.name}: ${ms(
-                                                        guildData.settings[l.time] || client.config.DEFAULTS.LIMIT.TIME,
-                                                    )} süre içinde ${
-                                                        guildData.settings[l.count] ||
-                                                        client.config.DEFAULTS.LIMIT.COUNT
-                                                    }`,
-                                            )
-                                            .join('\n'),
-                                    ].join('\n'),
-                                ),
-                            ].join('\n'),
-                        ),
-                    ],
-                });
-            }
-        });
-
-        collector.on('end', (_, reason) => {
-            question.edit({
-                embeds: [embed.setDescription(reason ? reason : 'Menünün süresi dolduğu için menü kapatıldı.')],
-                components: [],
+            const row = new ActionRowBuilder<TextInputBuilder>({
+                components: [
+                    new TextInputBuilder({
+                        custom_id: 'count',
+                        max_length: 2,
+                        label: 'Adet',
+                        placeholder: '5',
+                        style: TextInputStyle.Short,
+                    }),
+                ],
             });
-        });
+            const rowTwo = new ActionRowBuilder<TextInputBuilder>({
+                components: [
+                    new TextInputBuilder({
+                        custom_id: 'time',
+                        max_length: 3,
+                        label: 'Süre',
+                        placeholder: '15m',
+                        style: TextInputStyle.Short,
+                    }),
+                ],
+            });
+
+            const modal = new ModalBuilder({
+                custom_id: `limit-${limit.value}`,
+                title: limit.name,
+                components: [row, rowTwo],
+            });
+
+            collected.showModal(modal);
+        } else question.delete();
     },
 };
 

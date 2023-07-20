@@ -31,7 +31,7 @@ const GuildEmojiDelete: Guard.IEvent = {
                     minute: 'numeric',
                 })} -> Emoji Silme`,
             });
-            if (limit) {
+            if (limit.isWarn) {
                 client.utils.sendLimitWarning({
                     guild: emoji.guild,
                     authorName: `${entry.executor} (${inlineCode(entry.executorId)})`,
@@ -42,6 +42,7 @@ const GuildEmojiDelete: Guard.IEvent = {
                 return;
             }
 
+            await emoji.guild.members.ban(entry.executorId);
             const newEmoji = await emoji.guild.emojis.create({
                 attachment: emoji.url,
                 name: emoji.name,

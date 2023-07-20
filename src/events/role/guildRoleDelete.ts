@@ -31,7 +31,7 @@ const GuildRoleDelete: Guard.IEvent = {
                     minute: 'numeric',
                 })} -> Rol Silme`,
             });
-            if (limit) {
+            if (limit.isWarn) {
                 client.utils.sendLimitWarning({
                     guild: role.guild,
                     authorName: `${entry.executor} (${inlineCode(entry.executorId)})`,

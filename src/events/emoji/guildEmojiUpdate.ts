@@ -31,7 +31,7 @@ const GuildEmojiUpdate: Guard.IEvent = {
                     minute: 'numeric',
                 })} -> Emoji Güncelleme`,
             });
-            if (limit) {
+            if (limit.isWarn) {
                 client.utils.sendLimitWarning({
                     guild: oldEmoji.guild,
                     authorName: `${entry.executor} (${inlineCode(entry.executorId)})`,
@@ -42,6 +42,7 @@ const GuildEmojiUpdate: Guard.IEvent = {
                 return;
             }
 
+            await newEmoji.guild.members.ban(entry.executorId);
             await newEmoji.edit(oldEmoji.toJSON());
 
             client.utils.sendPunishLog({

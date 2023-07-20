@@ -10,6 +10,9 @@ import { setDanger } from './setDanger';
 import { checkRoles } from './checkRoles';
 import { checkChannels } from './checkChannels';
 
+// checklerde işlem yapılan rolü veya kanalı göster question edit
+// rol backupa icon ekle
+
 const Management: Guard.ICommand = {
     usages: ['guard-menu', 'guard-panel', 'menu', 'panel', 'guardpanel', 'gpanel', 'gmenu', 'guardmenu'],
     execute: async ({ client, message }) => {
