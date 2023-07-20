@@ -1,5 +1,5 @@
 import { LimitFlags, SafeFlags } from '@guard-bot/enums';
-import { AuditLogEvent, EmbedBuilder, Events, bold, codeBlock, inlineCode, roleMention } from 'discord.js';
+import { AuditLogEvent, Events, inlineCode } from 'discord.js';
 
 const WebhookUpdate: Guard.IEvent = {
     name: Events.WebhooksUpdate,
@@ -20,8 +20,6 @@ const WebhookUpdate: Guard.IEvent = {
             ];
             if (safe.includes(SafeFlags.Full)) return;
 
-            const embed = new EmbedBuilder({ color: client.utils.getRandomColor() });
-
             const limit = client.utils.checkLimits({
                 userId: entry.executor.id,
                 type: LimitFlags.General,
@@ -34,15 +32,13 @@ const WebhookUpdate: Guard.IEvent = {
                 })} -> Webhook Güncelleme`,
             });
             if (limit) {
-                if (channel.guild.publicUpdatesChannel) {
-                    const remainingCount = limit.maxCount - limit.currentCount;
-                    const content = `${entry.executor}, ${bold('webhook')} limitinde ${inlineCode(
-                        limit.maxCount.toString(),
-                    )} hakkından birini kullandığı için uyarıldı. Kalan limit ${inlineCode(
-                        remainingCount.toString(),
-                    )}. (${inlineCode(`${limit.currentCount}/${limit.maxCount}`)})`;
-                    channel.guild.publicUpdatesChannel.send({ embeds: [embed.setDescription(content)] });
-                }
+                client.utils.sendLimitWarning({
+                    guild: channel.guild,
+                    authorName: `${entry.executor} (${inlineCode(entry.executorId)})`,
+                    currentCount: limit.currentCount,
+                    maxCount: limit.maxCount,
+                    type: 'webhook',
+                });
                 return;
             }
 
@@ -55,27 +51,15 @@ const WebhookUpdate: Guard.IEvent = {
             const webhook = entry.target;
             await webhook.edit({ name: webhook.name, avatar: webhook.avatar });
 
-            if (channel.guild.publicUpdatesChannel) {
-                const authorName = `${entry.executor} (${inlineCode(entry.executorId)})`;
-                const webhookName = `${webhook} (${inlineCode(webhook.id)})`;
-                const action = safe.length ? 'güncelledi limite ulaştı' : 'güncelledi';
-                channel.guild.publicUpdatesChannel.send({
-                    content: roleMention(channel.guildId),
-                    embeds: [
-                        embed.setDescription(
-                            [
-                                `${authorName} adlı kullanıcı ${webhookName} adlı webhooku ${action} ve yasaklandı.`,
-                                safe.includes(SafeFlags.General)
-                                    ? [
-                                          '# Limite Yakalanmadan Önceki İşlemleri',
-                                          codeBlock('yaml', limit.operations.map((o, i) => `${i++}. ${o}`).join('\n')),
-                                      ].join('\n')
-                                    : undefined,
-                            ].join('\n'),
-                        ),
-                    ],
-                });
-            }
+            client.utils.sendPunishLog({
+                guild: channel.guild,
+                action: safe.length ? 'güncelleyerek limite ulaştı' : 'güncelledi',
+                authorName: `${entry.executor} (${inlineCode(entry.executorId)})`,
+                targetName: `${webhook} (${inlineCode(webhook.id)})`,
+                targetType: 'webhooku',
+                isSafe: safe.length > 0,
+                operations: limit.operations || [],
+            });
         } catch (error) {
             console.error('Webhook Update Error:', error);
         }

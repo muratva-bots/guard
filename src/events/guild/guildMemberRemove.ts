@@ -1,5 +1,5 @@
 import { LimitFlags, SafeFlags } from '@guard-bot/enums';
-import { AuditLogEvent, EmbedBuilder, Events, Guild, bold, codeBlock, inlineCode, roleMention } from 'discord.js';
+import { AuditLogEvent, Events, Guild, inlineCode } from 'discord.js';
 
 const GuildMemberRemove: Guard.IEvent = {
     name: Events.GuildMemberRemove,
@@ -18,8 +18,6 @@ const GuildMemberRemove: Guard.IEvent = {
             ];
             if (safe.includes(SafeFlags.Full)) return;
 
-            const embed = new EmbedBuilder({ color: client.utils.getRandomColor() });
-
             const limit = client.utils.checkLimits({
                 userId: entry.executor.id,
                 type: LimitFlags.BanKick,
@@ -32,15 +30,13 @@ const GuildMemberRemove: Guard.IEvent = {
                 })} -> Üye Atma`,
             });
             if (limit) {
-                if (member.guild.publicUpdatesChannel) {
-                    const remainingCount = limit.maxCount - limit.currentCount;
-                    const content = `${entry.executor}, ${bold('yasaklama & atma')} limitinde ${inlineCode(
-                        limit.maxCount.toString(),
-                    )} hakkından birini kullandığı için uyarıldı. Kalan limit ${inlineCode(
-                        remainingCount.toString(),
-                    )}. (${inlineCode(`${limit.currentCount}/${limit.maxCount}`)})`;
-                    member.guild.publicUpdatesChannel.send({ embeds: [embed.setDescription(content)] });
-                }
+                client.utils.sendLimitWarning({
+                    guild: member.guild,
+                    authorName: `${entry.executor} (${inlineCode(entry.executorId)})`,
+                    currentCount: limit.currentCount,
+                    maxCount: limit.maxCount,
+                    type: 'atma',
+                });
                 return;
             }
 
@@ -50,27 +46,15 @@ const GuildMemberRemove: Guard.IEvent = {
             await client.utils.closePermissions();
             await client.utils.setDanger(member.guild.id, true);
 
-            if (member.guild.publicUpdatesChannel) {
-                const authorName = `${entry.executor} (${inlineCode(entry.executorId)})`;
-                const memberName = `${member} (${inlineCode(member.id)})`;
-                const action = safe.length ? 'atarak limite ulaştı' : 'attı';
-                member.guild.publicUpdatesChannel.send({
-                    content: roleMention(member.guild.id),
-                    embeds: [
-                        embed.setDescription(
-                            [
-                                `${authorName} adlı kullanıcı ${memberName} adlı kullanıcıyı ${action} ve yasaklandı.`,
-                                safe.includes(SafeFlags.General)
-                                    ? [
-                                          '# Limite Yakalanmadan Önceki İşlemleri',
-                                          codeBlock('yaml', limit.operations.map((o, i) => `${i++}. ${o}`).join('\n')),
-                                      ].join('\n')
-                                    : undefined,
-                            ].join('\n'),
-                        ),
-                    ],
-                });
-            }
+            client.utils.sendPunishLog({
+                guild: member.guild,
+                action: safe.length ? 'yasaklayarak limite ulaştı' : 'yasakladı',
+                authorName: `${entry.executor} (${inlineCode(entry.executorId)})`,
+                targetName: `${entry.target.username} (${inlineCode(entry.target.id)})`,
+                targetType: 'sunucudan',
+                isSafe: safe.length > 0,
+                operations: limit.operations || [],
+            });
         } catch (error) {
             console.error('Guild Kick Error:', error);
         }

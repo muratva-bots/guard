@@ -10,8 +10,7 @@ import {
 } from 'discord.js';
 
 const muscles = [
-    { name: 'URL Koruması', value: 'url' },
-    { name: 'Yedekleme', value: 'backup' },
+    { name: 'URL Koruması (!^?)', value: 'url' },
     { name: 'Sunucu Ayar Koruması', value: 'general' },
     { name: 'Rol Koruması', value: 'role' },
     { name: 'Kanal Koruması', value: 'channel' },

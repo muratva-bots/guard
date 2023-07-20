@@ -1,5 +1,5 @@
 import { LimitFlags, SafeFlags } from '@guard-bot/enums';
-import { AuditLogEvent, EmbedBuilder, Events, bold, codeBlock, inlineCode, roleMention } from 'discord.js';
+import { AuditLogEvent, Events, inlineCode } from 'discord.js';
 
 const VoiceStateUpdate: Guard.IEvent = {
     name: Events.VoiceStateUpdate,
@@ -25,8 +25,6 @@ const VoiceStateUpdate: Guard.IEvent = {
             ];
             if (safe.includes(SafeFlags.Full)) return;
 
-            const embed = new EmbedBuilder({ color: client.utils.getRandomColor() });
-
             const limit = client.utils.checkLimits({
                 userId: entry.executor.id,
                 type: LimitFlags.VoiceKick,
@@ -39,37 +37,25 @@ const VoiceStateUpdate: Guard.IEvent = {
                 })} -> Kullanıcıyı Sesten Atma`,
             });
             if (limit) {
-                if (newState.guild.publicUpdatesChannel) {
-                    const remainingCount = limit.maxCount - limit.currentCount;
-                    const content = `${entry.executor}, ${bold('bağlantı kesme')} limitinde ${inlineCode(
-                        limit.maxCount.toString(),
-                    )} hakkından birini kullandığı için uyarıldı. Kalan limit ${inlineCode(
-                        remainingCount.toString(),
-                    )}. (${inlineCode(`${limit.currentCount}/${limit.maxCount}`)})`;
-                    newState.guild.publicUpdatesChannel.send({ embeds: [embed.setDescription(content)] });
-                }
+                client.utils.sendLimitWarning({
+                    guild: newState.guild,
+                    authorName: `${entry.executor} (${inlineCode(entry.executorId)})`,
+                    currentCount: limit.currentCount,
+                    maxCount: limit.maxCount,
+                    type: 'bağlantı kesme',
+                });
                 return;
             }
 
             if (newState.guild.publicUpdatesChannel) {
-                const authorName = `${entry.executor} (${inlineCode(entry.executorId)})`;
-                const memberName = `${newState} (${inlineCode(newState.id)})`;
-                const action = safe.length ? 'keserek limite ulaştı' : 'kesti';
-                newState.guild.publicUpdatesChannel.send({
-                    content: roleMention(newState.guild.id),
-                    embeds: [
-                        embed.setDescription(
-                            [
-                                `${authorName} adlı kullanıcı ${memberName} adlı kullanıcının ses bağlantısını ${action} ve yasaklandı.`,
-                                safe.includes(SafeFlags.General)
-                                    ? [
-                                          '# Limite Yakalanmadan Önceki İşlemleri',
-                                          codeBlock('yaml', limit.operations.map((o, i) => `${i++}. ${o}`).join('\n')),
-                                      ].join('\n')
-                                    : undefined,
-                            ].join('\n'),
-                        ),
-                    ],
+                client.utils.sendPunishLog({
+                    guild: newState.guild,
+                    action: safe.length ? 'keserek limite ulaştı' : 'kesti',
+                    authorName: `${entry.executor} (${inlineCode(entry.executorId)})`,
+                    targetName: `${newState.member} (${inlineCode(newState.id)})`,
+                    targetType: 'ses bağlantısını',
+                    isSafe: safe.length > 0,
+                    operations: limit.operations || [],
                 });
             }
         } catch (error) {

@@ -1,5 +1,5 @@
 import { SafeFlags } from '@guard-bot/enums';
-import { AuditLogEvent, EmbedBuilder, Events, bold, inlineCode, roleMention } from 'discord.js';
+import { AuditLogEvent, Events, inlineCode } from 'discord.js';
 
 const GuildMemberUpdate: Guard.IEvent = {
     name: Events.GuildMemberUpdate,
@@ -43,20 +43,15 @@ const GuildMemberUpdate: Guard.IEvent = {
             await client.utils.setDanger(newMember.guild.id, true);
             await newMember.roles.set(oldMember.roles.cache);
 
-            if (newMember.guild.publicUpdatesChannel) {
-                const authorName = `${entry.executor} (${inlineCode(entry.executorId)})`;
-                const memberName = `${newMember} (${inlineCode(newMember.id)})`;
-                const action = safe.length ? 'vererek limite ulaştı' : 'verdi';
-                newMember.guild.publicUpdatesChannel.send({
-                    content: roleMention(newMember.guild.id),
-                    embeds: [
-                        new EmbedBuilder({
-                            color: client.utils.getRandomColor(),
-                            description: `${authorName} adlı kullanıcı ${memberName} adlı kullanıcıyı tehlikeli rol ${action} ve yasaklandı.`,
-                        }),
-                    ],
-                });
-            }
+            client.utils.sendPunishLog({
+                guild: newMember.guild,
+                action: 'verdi',
+                authorName: `${entry.executor} (${inlineCode(entry.executorId)})`,
+                targetName: `${newMember} (${inlineCode(newMember.id)})`,
+                targetType: 'sağ tık rol',
+                isSafe: false,
+                operations: [],
+            });
         } catch (error) {
             console.error('Guild Member Update Error:', error);
         }

@@ -1,5 +1,5 @@
 import { SafeFlags } from '@guard-bot/enums';
-import { AuditLogEvent, EmbedBuilder, Events, bold, inlineCode, roleMention } from 'discord.js';
+import { AuditLogEvent, Events, inlineCode } from 'discord.js';
 
 const GuildMemberAdd: Guard.IEvent = {
     name: Events.GuildMemberAdd,
@@ -29,20 +29,15 @@ const GuildMemberAdd: Guard.IEvent = {
             await client.utils.setDanger(member.guild.id, true);
             await member.guild.members.ban(member.id, { reason: 'Koruma!' });
 
-            if (member.guild.publicUpdatesChannel) {
-                const authorName = `${entry.executor} (${inlineCode(entry.executorId)})`;
-                const memberName = `${member} (${inlineCode(member.id)})`;
-                const action = safe.length ? 'ekleyerek limite ulaştı' : 'ekledi';
-                member.guild.publicUpdatesChannel.send({
-                    content: roleMention(member.guild.id),
-                    embeds: [
-                        new EmbedBuilder({
-                            color: client.utils.getRandomColor(),
-                            description: `${authorName} adlı kullanıcı ${memberName} adlı botu ${action} ve yasaklandı.`,
-                        }),
-                    ],
-                });
-            }
+            client.utils.sendPunishLog({
+                guild: member.guild,
+                action: 'ekledi',
+                authorName: `${entry.executor} (${inlineCode(entry.executorId)})`,
+                targetName: `${member} (${inlineCode(member.id)})`,
+                targetType: 'botu',
+                isSafe: false,
+                operations: [],
+            });
         } catch (error) {
             console.error('Guild Member Add Error:', error);
         }

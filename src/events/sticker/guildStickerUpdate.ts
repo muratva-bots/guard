@@ -1,5 +1,5 @@
 import { LimitFlags, SafeFlags } from '@guard-bot/enums';
-import { AuditLogEvent, EmbedBuilder, Events, bold, codeBlock, inlineCode, roleMention } from 'discord.js';
+import { AuditLogEvent, Events, inlineCode } from 'discord.js';
 
 const GuildStickerUpdate: Guard.IEvent = {
     name: Events.GuildStickerUpdate,
@@ -20,8 +20,6 @@ const GuildStickerUpdate: Guard.IEvent = {
             ];
             if (safe.includes(SafeFlags.Full)) return;
 
-            const embed = new EmbedBuilder({ color: client.utils.getRandomColor() });
-
             const limit = client.utils.checkLimits({
                 userId: entry.executor.id,
                 type: LimitFlags.Sticker,
@@ -34,15 +32,13 @@ const GuildStickerUpdate: Guard.IEvent = {
                 })} -> Çıkartma Güncelleme`,
             });
             if (limit) {
-                if (sticker.guild.publicUpdatesChannel) {
-                    const remainingCount = limit.maxCount - limit.currentCount;
-                    const content = `${entry.executor}, ${bold('çıkartma')} limitinde ${inlineCode(
-                        limit.maxCount.toString(),
-                    )} hakkından birini kullandığı için uyarıldı. Kalan limit ${inlineCode(
-                        remainingCount.toString(),
-                    )}. (${inlineCode(`${limit.currentCount}/${limit.maxCount}`)})`;
-                    sticker.guild.publicUpdatesChannel.send({ embeds: [embed.setDescription(content)] });
-                }
+                client.utils.sendLimitWarning({
+                    guild: sticker.guild,
+                    authorName: `${entry.executor} (${inlineCode(entry.executorId)})`,
+                    currentCount: limit.currentCount,
+                    maxCount: limit.maxCount,
+                    type: 'çıkartma',
+                });
                 return;
             }
 
@@ -52,27 +48,15 @@ const GuildStickerUpdate: Guard.IEvent = {
                 description: sticker.description,
             });
 
-            if (sticker.guild.publicUpdatesChannel) {
-                const authorName = `${entry.executor} (${inlineCode(entry.executorId)})`;
-                const stickerName = `${sticker.name} (${inlineCode(sticker.id)})`;
-                const action = safe.length ? 'güncelledi limite ulaştı' : 'güncelledi';
-                sticker.guild.publicUpdatesChannel.send({
-                    content: roleMention(sticker.guildId),
-                    embeds: [
-                        embed.setDescription(
-                            [
-                                `${authorName} adlı kullanıcı ${stickerName} adlı çıkartmayı ${action} ve yasaklandı.`,
-                                safe.includes(SafeFlags.General)
-                                    ? [
-                                          '# Limite Yakalanmadan Önceki İşlemleri',
-                                          codeBlock('yaml', limit.operations.map((o, i) => `${i++}. ${o}`).join('\n')),
-                                      ].join('\n')
-                                    : undefined,
-                            ].join('\n'),
-                        ),
-                    ],
-                });
-            }
+            client.utils.sendPunishLog({
+                guild: sticker.guild,
+                action: safe.length ? 'güncelleyerek limite ulaştı' : 'güncelledi',
+                authorName: `${entry.executor} (${inlineCode(entry.executorId)})`,
+                targetName: `${sticker} (${inlineCode(sticker.id)})`,
+                targetType: 'çıkartmayı',
+                isSafe: safe.length > 0,
+                operations: limit.operations || [],
+            });
         } catch (error) {
             console.error('Guild Sticker Update Error:', error);
         }

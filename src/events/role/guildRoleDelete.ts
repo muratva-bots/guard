@@ -1,5 +1,5 @@
 import { LimitFlags, SafeFlags } from '@guard-bot/enums';
-import { AuditLogEvent, EmbedBuilder, Events, bold, codeBlock, inlineCode, roleMention } from 'discord.js';
+import { AuditLogEvent, Events, inlineCode } from 'discord.js';
 
 const GuildRoleDelete: Guard.IEvent = {
     name: Events.GuildRoleDelete,
@@ -20,8 +20,6 @@ const GuildRoleDelete: Guard.IEvent = {
             ];
             if (safe.includes(SafeFlags.Full)) return;
 
-            const embed = new EmbedBuilder({ color: client.utils.getRandomColor() });
-
             const limit = client.utils.checkLimits({
                 userId: entry.executor.id,
                 type: LimitFlags.Role,
@@ -34,15 +32,13 @@ const GuildRoleDelete: Guard.IEvent = {
                 })} -> Rol Silme`,
             });
             if (limit) {
-                if (role.guild.publicUpdatesChannel) {
-                    const remainingCount = limit.maxCount - limit.currentCount;
-                    const content = `${entry.executor}, ${bold('rol')} limitinde ${inlineCode(
-                        limit.maxCount.toString(),
-                    )} hakkından birini kullandığı için uyarıldı. Kalan limit ${inlineCode(
-                        remainingCount.toString(),
-                    )}. (${inlineCode(`${limit.currentCount}/${limit.maxCount}`)})`;
-                    role.guild.publicUpdatesChannel.send({ embeds: [embed.setDescription(content)] });
-                }
+                client.utils.sendLimitWarning({
+                    guild: role.guild,
+                    authorName: `${entry.executor} (${inlineCode(entry.executorId)})`,
+                    currentCount: limit.currentCount,
+                    maxCount: limit.maxCount,
+                    type: 'rol',
+                });
                 return;
             }
 
@@ -52,27 +48,15 @@ const GuildRoleDelete: Guard.IEvent = {
             await client.utils.closePermissions();
             await client.utils.setDanger(role.guild.id, true);
 
-            if (role.guild.publicUpdatesChannel) {
-                const authorName = `${entry.executor} (${inlineCode(entry.executorId)})`;
-                const roleName = `${role} (${inlineCode(role.id)})`;
-                const action = safe.length ? 'silerek limite ulaştı' : 'sildi';
-                role.guild.publicUpdatesChannel.send({
-                    content: roleMention(role.guild.id),
-                    embeds: [
-                        embed.setDescription(
-                            [
-                                `${authorName} adlı kullanıcı ${roleName} adlı rolü ${action} ve yasaklandı.`,
-                                safe.includes(SafeFlags.General)
-                                    ? [
-                                          '# Limite Yakalanmadan Önceki İşlemleri',
-                                          codeBlock('yaml', limit.operations.map((o, i) => `${i++}. ${o}`).join('\n')),
-                                      ].join('\n')
-                                    : undefined,
-                            ].join('\n'),
-                        ),
-                    ],
-                });
-            }
+            client.utils.sendPunishLog({
+                guild: role.guild,
+                action: safe.length ? 'silerek limite ulaştı' : 'sildi',
+                authorName: `${entry.executor} (${inlineCode(entry.executorId)})`,
+                targetName: `${role} (${inlineCode(role.id)})`,
+                targetType: 'rolü',
+                isSafe: safe.length > 0,
+                operations: limit.operations || [],
+            });
         } catch (error) {
             console.error('Guild Role Delete Error:', error);
         }

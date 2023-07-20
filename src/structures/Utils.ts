@@ -2,7 +2,18 @@ import { readdirSync } from 'fs';
 import { resolve } from 'path';
 
 import { Client } from '@guard-bot/structures';
-import { NewsChannel, PermissionFlagsBits, PermissionOverwrites, TextChannel, VoiceChannel } from 'discord.js';
+import {
+    Guild,
+    NewsChannel,
+    PermissionFlagsBits,
+    PermissionOverwrites,
+    TextChannel,
+    VoiceChannel,
+    EmbedBuilder,
+    codeBlock,
+    inlineCode,
+    bold,
+} from 'discord.js';
 import {
     ChannelModel,
     GuildModel,
@@ -46,6 +57,72 @@ export class Utils {
         this.client.servers.set(guildId, document.toObject());
     }
 
+    sendLimitWarning({
+        guild,
+        authorName,
+        maxCount,
+        currentCount,
+        type,
+    }: {
+        guild: Guild;
+        authorName: string;
+        maxCount: number;
+        currentCount: number;
+        type: string;
+    }) {
+        if (!guild.publicUpdatesChannel) return;
+
+        const remainingCount = maxCount - currentCount;
+        const content = `${authorName}, ${bold(type)} limitinde ${inlineCode(
+            maxCount.toString(),
+        )} hakkından birini kullandığı için uyarıldı. Kalan limit ${inlineCode(
+            remainingCount.toString(),
+        )}. (${inlineCode(`${currentCount}/${maxCount}`)})`;
+
+        const embed = new EmbedBuilder({ color: this.client.utils.getRandomColor() });
+        embed.setDescription(content);
+
+        guild.publicUpdatesChannel.send({ embeds: [embed] });
+    }
+
+    sendPunishLog({
+        guild,
+        authorName,
+        targetName,
+        targetType,
+        action,
+        isSafe,
+        operations,
+    }: {
+        guild: Guild;
+        authorName: string;
+        targetName: string;
+        targetType: string;
+        action: string;
+        isSafe: boolean;
+        operations: string[];
+    }) {
+        if (!guild.publicUpdatesChannel) return;
+
+        const embed = new EmbedBuilder({ color: this.client.utils.getRandomColor() });
+
+        const updateContent = `${authorName} adlı kullanıcı ${targetName} adlı ${targetType} ${action} ve yasaklandı.`;
+        const previousOperations = isSafe
+            ? `# Limite Yakalanmadan Önceki İşlemleri\n${codeBlock(
+                  'yaml',
+                  operations.map((o, i) => `${i++}. ${o}`).join('\n'),
+              )}`
+            : undefined;
+
+        const description = [updateContent, previousOperations].filter(Boolean).join('\n');
+        embed.setDescription(description);
+
+        guild.publicUpdatesChannel.send({
+            content: '@everyone',
+            embeds: [embed],
+        });
+    }
+
     checkLimits({
         userId,
         type,
@@ -71,7 +148,7 @@ export class Utils {
             return {
                 maxCount: limit,
                 currentCount: 1,
-                operations: userLimits.operations,
+                operations: [operation],
             };
         }
 
