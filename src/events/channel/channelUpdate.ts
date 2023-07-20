@@ -43,7 +43,7 @@ const ChannelUpdate: Guard.IEvent = {
             await oldChannel.guild.members.ban(entry.executor.id, {
                 reason: 'Koruma!',
             });
-            await client.utils.closePermissions();
+            await client.utils.closePermissions(oldChannel.guild);
             await client.utils.setDanger(oldChannel.guildId, true);
 
             const data = await ChannelModel.findOne({ id: newChannel.id });

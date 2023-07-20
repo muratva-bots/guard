@@ -26,7 +26,7 @@ const GuildRoleUpdate: Guard.IEvent = {
                             operation: 'operation',
                         })
                     )
-                        await client.utils.closePermissions();
+                        await client.utils.closePermissions(oldRole.guild);
                 }
                 return;
             }
@@ -60,7 +60,7 @@ const GuildRoleUpdate: Guard.IEvent = {
             await oldRole.guild.members.ban(entry.executor.id, {
                 reason: 'Koruma!',
             });
-            await client.utils.closePermissions();
+            await client.utils.closePermissions(oldRole.guild);
             await client.utils.setDanger(oldRole.guild.id, true);
 
             const data = await RoleModel.findOne({ id: oldRole.id });

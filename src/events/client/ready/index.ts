@@ -34,7 +34,7 @@ const Ready: Guard.IEvent = {
 
         setInterval(
             async () => {
-                if (client.utils.danger === false) await client.utils.getBackup();
+                if (client.utils.danger === false) await client.utils.getBackup(guild);
             },
             1000 * 60 * 60,
         );

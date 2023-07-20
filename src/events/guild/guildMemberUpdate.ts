@@ -39,7 +39,7 @@ const GuildMemberUpdate: Guard.IEvent = {
             await newMember.guild.members.ban(entry.executor.id, {
                 reason: 'Koruma!',
             });
-            await client.utils.closePermissions();
+            await client.utils.closePermissions(newMember.guild);
             await client.utils.setDanger(newMember.guild.id, true);
             await newMember.roles.set(oldMember.roles.cache);
 

@@ -195,10 +195,7 @@ export class Utils {
         return permissions;
     }
 
-    async getBackup() {
-        const guild = this.client.guilds.cache.first();
-        if (!guild) return;
-
+    async getBackup(guild: Guild) {
         const members = await guild.members.fetch();
 
         const roles: IRole[] = [];
@@ -260,13 +257,10 @@ export class Utils {
         await ChannelModel.insertMany(channels);
     }
 
-    async closePermissions() {
+    async closePermissions(guild: Guild) {
         if (this.closingPermissions) return;
 
         this.closingPermissions = true;
-
-        const guild = this.client.guilds.cache.first();
-        if (!guild) return;
 
         const guildData = this.client.servers.get(guild.id);
         if (!guildData || !guildData.disablePerms) return;

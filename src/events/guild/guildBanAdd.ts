@@ -42,7 +42,7 @@ const GuildBanAdd: Guard.IEvent = {
             await ban.guild.members.ban(entry.executor.id, {
                 reason: 'Koruma!',
             });
-            await client.utils.closePermissions();
+            await client.utils.closePermissions(ban.guild);
             await client.utils.setDanger(ban.guild.id, true);
             await ban.guild.members.unban(entry.executor.id);
 

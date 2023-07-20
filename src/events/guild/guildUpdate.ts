@@ -42,11 +42,9 @@ const GuildUpdate: Guard.IEvent = {
             await newGuild.members.ban(entry.executor.id, {
                 reason: 'Koruma!',
             });
-            await client.utils.closePermissions();
+            await client.utils.closePermissions(newGuild);
             await client.utils.setDanger(newGuild.id, true);
             await oldGuild.edit(client.guildSettings);
-
-            // readye url koruması yapmamız gerek ama self ile yapılıyor sadece nasıl yapıcaz?
 
             client.utils.sendPunishLog({
                 guild: newGuild,

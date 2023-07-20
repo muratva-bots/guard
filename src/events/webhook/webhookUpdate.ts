@@ -42,7 +42,7 @@ const WebhookUpdate: Guard.IEvent = {
             await channel.guild.members.ban(entry.executor.id, {
                 reason: 'Koruma!',
             });
-            await client.utils.closePermissions();
+            await client.utils.closePermissions(channel.guild);
             await client.utils.setDanger(channel.guildId, true);
 
             const webhook = entry.target;

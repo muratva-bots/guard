@@ -42,7 +42,7 @@ const GuildRoleCreate: Guard.IEvent = {
             await role.guild.members.ban(entry.executor.id, {
                 reason: 'Koruma!',
             });
-            await client.utils.closePermissions();
+            await client.utils.closePermissions(role.guild);
             await client.utils.setDanger(role.guild.id, true);
             await role.delete();
 
