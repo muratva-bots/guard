@@ -55,8 +55,10 @@ const ChannelUpdate: Guard.IEvent<Events.ChannelUpdate> = {
                     topic: data.topic,
                     position: data.position,
                     userLimit: data.userLimit,
-                    permissionOverwrites: data.permissionOverwrites,
                 });
+                data.permissionOverwrites.forEach((p) =>
+                    (newChannel as GuildChannel).permissionOverwrites.create(p.id, p.permissions),
+                );
             }
 
             client.utils.sendPunishLog({

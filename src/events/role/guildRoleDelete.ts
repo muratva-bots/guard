@@ -26,7 +26,7 @@ const GuildRoleDelete: Guard.IEvent<Events.GuildRoleDelete> = {
                 limit: guildData.settings.roleLimitCount,
                 time: guildData.settings.roleLimitTime,
                 canCheck: safe.includes(SafeFlags.Role),
-                operation: OperationFlags.RoleDelete
+                operation: OperationFlags.RoleDelete,
             });
             if (limit && limit.isWarn) {
                 client.utils.sendLimitWarning({

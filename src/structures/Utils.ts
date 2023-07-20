@@ -14,14 +14,7 @@ import {
     inlineCode,
     bold,
 } from 'discord.js';
-import {
-    ChannelModel,
-    GuildModel,
-    IChannel,
-    IChannelOverwrite,
-    IRole,
-    RoleModel,
-} from '@/models';
+import { ChannelModel, GuildModel, IChannel, IChannelOverwrite, IRole, RoleModel } from '@/models';
 
 export class Utils {
     private client: Client;
@@ -176,7 +169,7 @@ export class Utils {
         };
     }
 
-    private getPermissions(permission: PermissionOverwrites) {
+    private getPermissions(permission: PermissionOverwrites): Guard.IPermissions {
         const permissions = {};
         Object.keys(PermissionFlagsBits).forEach((p) => (permissions[p] = null));
 
@@ -191,16 +184,16 @@ export class Utils {
             }
         });
 
-        return permissions;
+        return permissions as Guard.IPermissions;
     }
 
     async getBackup(guild: Guild) {
-        const members = await guild.members.fetch();
+        guild = await guild.fetch();
 
         const roles: IRole[] = [];
         guild.roles.cache
             .sort((a, b) => a.position - b.position)
-            .filter((role) => !role.managed)
+            .filter((role) => !role.managed && role.id !== guild.id)
             .forEach((role) => {
                 const channelOverwrites: IChannelOverwrite[] = [];
                 guild.channels.cache.forEach((channel) => {
@@ -217,7 +210,7 @@ export class Utils {
                     guild: guild.id,
                     id: role.id,
                     channelOverwrites,
-                    members: members.filter((m) => m.roles.cache.has(role.id)).map((member) => member.id),
+                    members: guild.members.cache.filter((m) => m.roles.cache.has(role.id)).map((member) => member.id),
                     name: role.name,
                     color: role.color,
                     position: role.position,
@@ -230,10 +223,10 @@ export class Utils {
         await RoleModel.insertMany(roles);
 
         const channels: IChannel[] = [];
-        guild.channels.cache.forEach(async (channel) => {
+        guild.channels.cache.forEach((channel) => {
             if (channel.isThread()) return;
 
-            await ChannelModel.create({
+            channels.push({
                 guild: guild.id,
                 id: channel.id,
                 name: channel.name,
@@ -253,7 +246,14 @@ export class Utils {
             });
         });
         await ChannelModel.deleteMany();
+        console.log(channels.length);
         await ChannelModel.insertMany(channels);
+
+        await GuildModel.updateOne(
+            { id: guild.id },
+            { $set: { 'settings.guard.lastBackup': Date.now() } },
+            { upsert: true },
+        );
     }
 
     async closePermissions(guild: Guild) {
@@ -275,7 +275,7 @@ export class Utils {
                 role.setPermissions([]);
             });
         guildData.settings.permissions = permissions;
-        await GuildModel.updateOne({ id: guild.id }, { $set: { "settings.guard": guildData } }, { upsert: true });
+        await GuildModel.updateOne({ id: guild.id }, { $set: { 'settings.guard': guildData } }, { upsert: true });
     }
 
     getRandomColor() {
@@ -296,7 +296,7 @@ export class Utils {
             const files = readdirSync(resolve(__dirname, '..', 'events', category));
             files.forEach(async (fileName) => {
                 const event = (await import(resolve(__dirname, '..', 'events', category, fileName))).default;
-                this.client.on(event.name, (...args: unknown[]) => event.execute(this.client, [...args]));
+                this.client.on(event.name, (...args: unknown[]) => event.execute(this.client, ...args));
             });
         });
     }

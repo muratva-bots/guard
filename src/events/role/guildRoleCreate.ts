@@ -26,7 +26,7 @@ const GuildRoleCreate: Guard.IEvent<Events.GuildRoleCreate> = {
                 limit: guildData.settings.roleLimitCount,
                 time: guildData.settings.roleLimitTime,
                 canCheck: safe.includes(SafeFlags.Role),
-                operation: OperationFlags.RoleCreate
+                operation: OperationFlags.RoleCreate,
             });
             if (limit && limit.isWarn) {
                 client.utils.sendLimitWarning({

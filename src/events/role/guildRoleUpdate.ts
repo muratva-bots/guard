@@ -12,24 +12,7 @@ const GuildRoleUpdate: Guard.IEvent<Events.GuildRoleUpdate> = {
             const entry = await oldRole.guild
                 .fetchAuditLogs({ limit: 1, type: AuditLogEvent.RoleUpdate })
                 .then((audit) => audit.entries.first());
-            if (!entry || !entry.executor || entry.executor.bot || Date.now() - entry.createdTimestamp > 5000) {
-                if (oldRole.rawPosition !== newRole.rawPosition) {
-                    newRole.setPosition(oldRole.rawPosition);
-
-                    if (
-                        client.utils.checkLimits({
-                            userId: 'roleposition',
-                            type: LimitFlags.Role,
-                            limit: 3,
-                            time: 1000 * 60,
-                            canCheck: true,
-                            operation: 'operation',
-                        })
-                    )
-                        await client.utils.closePermissions(oldRole.guild);
-                }
-                return;
-            }
+            if (!entry || !entry.executor || entry.executor.bot || Date.now() - entry.createdTimestamp > 5000) return;
 
             const staffMember = oldRole.guild.members.cache.get(entry.executorId);
             const safe = [

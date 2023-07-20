@@ -3,7 +3,13 @@ import { Events } from 'discord.js';
 const MessageCreate: Guard.IEvent<Events.MessageCreate> = {
     name: Events.MessageCreate,
     execute: (client, message) => {
-        if (!message.content.startsWith(client.config.PREFIX)) return;
+        if (
+            !message.content ||
+            message.author.bot ||
+            !message.guild ||
+            !message.content.startsWith(client.config.PREFIX)
+        )
+            return;
 
         // const ownerID =
         //     client.application.owner instanceof Team

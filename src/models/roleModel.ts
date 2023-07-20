@@ -18,9 +18,9 @@ export interface IRole {
     mentionable: boolean;
 }
 
-
 const roleSchema = new Schema({
     name: String,
+    guild: String,
     id: String,
     color: Number,
     position: Number,

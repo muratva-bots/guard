@@ -34,7 +34,9 @@ async function checkOfflineAndWeb(client: Client, guild: Guild) {
                         embed.setDescription(
                             [
                                 `${m} (${inlineCode(m.id)}) adlı kullanıcı ${
-                                    m.presence?.clientStatus.web ? 'internet sitesinden giriş yaptığı' : 'çevrimdışı olduğu'
+                                    m.presence?.clientStatus.web
+                                        ? 'internet sitesinden giriş yaptığı'
+                                        : 'çevrimdışı olduğu'
                                 } için yetkileri çekildi.`,
                                 codeBlock(
                                     'yaml',

@@ -2,7 +2,7 @@ import { ISettings } from '@/models';
 import { Client } from '@/structures';
 import { ClientEvents, Message, PermissionsString } from 'discord.js';
 
-export { }
+export {};
 
 declare global {
     namespace Guard {
@@ -10,7 +10,7 @@ declare global {
 
         type IPermissions = {
             [key in PermissionsString]: boolean | null;
-        };        
+        };
 
         interface ILimit {
             operations: string[];

@@ -1,19 +1,29 @@
-import { ChannelModel, RoleModel } from '@/models';
-import { ActionRowBuilder, ButtonBuilder, ChannelType, GuildChannel, Message } from 'discord.js';
+import { ChannelModel, GuildModel, RoleModel } from '@/models';
+import { ChannelType, EmbedBuilder, GuildChannel, Message, inlineCode } from 'discord.js';
 
-export async function checkChannels(question: Message, row: ActionRowBuilder<ButtonBuilder>) {
+export async function checkChannels(question: Message) {
+    await GuildModel.updateOne(
+        { id: question.guildId },
+        { $set: { 'settings.guard.lastChannelControl': Date.now() } },
+        { upsert: true },
+    );
+
+    const embed = new EmbedBuilder(question.embeds[0]);
     const channels = await ChannelModel.find();
     const deletedChannels = channels.filter((channel) => !question.guild.channels.cache.has(channel.id));
-    if (!deletedChannels.length) return;
+    if (!deletedChannels.length) {
+        question.edit({ components: [], embeds: [embed.setDescription('Silinmiş kanal bulunmuyor.')] });
+        return;
+    }
 
-    (row.components[1] as ButtonBuilder).setDisabled(true);
-    question.edit({ components: [row] });
+    question.edit({ components: [], embeds: [embed.setDescription(`Kanallar kuruluyor... (${inlineCode('0%')})`)] });
 
     const sortedChannels = [
         ...deletedChannels.filter((channel) => channel.type === ChannelType.GuildCategory),
         ...deletedChannels.filter((channel) => channel.type !== ChannelType.GuildCategory),
     ];
-    for (const deletedChannel of sortedChannels) {
+    for (let i = 0; i < sortedChannels.length; i++) {
+        const deletedChannel = sortedChannels[i];
         const newChannel = (await question.guild.channels.create({
             name: deletedChannel.name,
             nsfw: deletedChannel.nsfw,
@@ -21,9 +31,9 @@ export async function checkChannels(question: Message, row: ActionRowBuilder<But
             type: deletedChannel.type,
             topic: deletedChannel.topic,
             position: deletedChannel.position,
-            permissionOverwrites: deletedChannel.permissionOverwrites,
             userLimit: deletedChannel.userLimit,
         })) as GuildChannel;
+        deletedChannel.permissionOverwrites.forEach((p) => newChannel.permissionOverwrites.create(p.id, p.permissions));
         await RoleModel.updateMany(
             { 'channelOverwrites.$.id': deletedChannel.id },
             { $set: { 'channelOverwrites.$.id': newChannel.id } },
@@ -45,5 +55,18 @@ export async function checkChannels(question: Message, row: ActionRowBuilder<But
                     });
             }
         }
+
+        if (i % 5 === 0)
+            question.edit({
+                embeds: [
+                    embed.setDescription(
+                        `Kanallar oluşturuluyor... (${inlineCode(
+                            `%${Math.round(((i + 1) / sortedChannels.length) * 100)}`,
+                        )})`,
+                    ),
+                ],
+            });
     }
+
+    question.edit({ embeds: [embed.setDescription('Kanallar oluşturuldu ve izinler ayarlandı.')] });
 }
