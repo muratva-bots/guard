@@ -1,4 +1,4 @@
-import { LimitFlags, OperationFlags, SafeFlags } from '@guard-bot/enums';
+import { LimitFlags, OperationFlags, SafeFlags } from '@/enums';
 import { AuditLogEvent, Events, inlineCode } from 'discord.js';
 
 const WebhookUpdate: Guard.IEvent = {

@@ -1,5 +1,5 @@
-import { GuildModel } from '@guard-bot/models';
-import { Client } from '@guard-bot/structures';
+import { GuildModel } from '@/models';
+import { Client } from '@/structures';
 import { EmbedBuilder, Guild, codeBlock, inlineCode } from 'discord.js';
 
 async function checkOfflineAndWeb(client: Client, guild: Guild) {
@@ -34,7 +34,7 @@ async function checkOfflineAndWeb(client: Client, guild: Guild) {
                         embed.setDescription(
                             [
                                 `${m} (${inlineCode(m.id)}) adlı kullanıcı ${
-                                    guildData.settings.web ? 'internet sitesinden giriş yaptığı' : 'çevrimdışı olduğu'
+                                    m.presence?.clientStatus.web ? 'internet sitesinden giriş yaptığı' : 'çevrimdışı olduğu'
                                 } için yetkileri çekildi.`,
                                 codeBlock(
                                     'yaml',

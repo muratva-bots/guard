@@ -1,5 +1,5 @@
-import { SafeFlags } from '@guard-bot/enums';
-import { GuildModel, IGuild } from '@guard-bot/models';
+import { SafeFlags } from '@/enums';
+import { GuildModel, IGuild } from '@/models';
 import { Events, Team } from 'discord.js';
 import checkOfflineAndWeb from './checkOfflineAndWeb';
 

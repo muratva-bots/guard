@@ -1,4 +1,4 @@
-import { ChannelModel, RoleModel } from '@guard-bot/models';
+import { ChannelModel, RoleModel } from '@/models';
 import { ActionRowBuilder, ButtonBuilder, ChannelType, GuildChannel, Message } from 'discord.js';
 
 export async function checkChannels(question: Message, row: ActionRowBuilder<ButtonBuilder>) {

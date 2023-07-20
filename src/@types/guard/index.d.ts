@@ -1,43 +1,34 @@
-import { ISettings } from '@guard-bot/models';
-import { Client } from '@guard-bot/structures';
+import { ISettings } from '@/models';
+import { Client } from '@/structures';
 import { ClientEvents, Message } from 'discord.js';
+
+export { }
 
 declare global {
     namespace Guard {
-        export type EventKeys = keyof ClientEvents;
-        export type ArgsOf<K extends EventKeys> = ClientEvents[K];
+        type EventKeys = keyof ClientEvents;
+        type ArgsOf<K extends EventKeys> = ClientEvents[K];
 
-        export interface ILimit {
+        interface ILimit {
             operations: string[];
             lastDate: number;
         }
 
-        export interface IEvent {
+        interface IEvent {
             name: EventKeys;
             execute: (client: Client, ...args: any[]) => Promise<void> | void;
         }
 
-        export interface ICommand {
+        interface ICommand {
             usages: string[];
             execute: (commandArgs: CommandArgs) => Promise<unknown> | unknown;
         }
 
-        export interface CommandArgs {
+        interface CommandArgs {
             client: Client;
             message: Message;
             args: string[];
             guildData: ISettings;
         }
-
-        export type TSafe =
-            | 'FULL'
-            | 'GENERAL'
-            | 'ROLE'
-            | 'CHANNEL'
-            | 'EMOJI'
-            | 'STICKER'
-            | 'BAN_KICK'
-            | 'WEBHOOK'
-            | 'VOICE_KICK';
     }
 }

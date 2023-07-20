@@ -1,4 +1,4 @@
-import { GuildModel } from '@guard-bot/models';
+import { GuildModel } from '@/models';
 import {
     ActionRowBuilder,
     ComponentType,

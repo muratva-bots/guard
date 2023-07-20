@@ -1,5 +1,6 @@
 import { MentionableSelectMenuBuilder } from '@discordjs/builders';
-import { GuildModel } from '@guard-bot/models';
+import { SafeFlags } from '@/enums';
+import { GuildModel } from '@/models';
 import {
     ActionRowBuilder,
     ComponentType,
@@ -123,8 +124,8 @@ const Safe: Guard.ICommand = {
                 if (collectedTwo) {
                     for (const value of collectedOne.values) {
                         const safe = client.safes.get(value);
-                        if (!safe) client.safes.set(collectedOne.values[0], collectedTwo.values as Guard.TSafe[]);
-                        else safe.push(...(collectedTwo.values as Guard.TSafe[]));
+                        if (!safe) client.safes.set(collectedOne.values[0], collectedTwo.values as SafeFlags[]);
+                        else safe.push(...(collectedTwo.values as SafeFlags[]));
                     }
 
                     const safes = Array.from(client.safes).map((s) => ({

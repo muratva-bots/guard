@@ -1,5 +1,5 @@
-import { LimitFlags, OperationFlags, SafeFlags } from '@guard-bot/enums';
-import { RoleModel } from '@guard-bot/models';
+import { LimitFlags, OperationFlags, SafeFlags } from '@/enums';
+import { RoleModel } from '@/models';
 import { AuditLogEvent, Events, inlineCode } from 'discord.js';
 
 const GuildRoleUpdate: Guard.IEvent = {

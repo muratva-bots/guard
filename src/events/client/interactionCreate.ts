@@ -1,4 +1,4 @@
-import { GuildModel } from '@guard-bot/models';
+import { GuildModel } from '@/models';
 import { Events, inlineCode, codeBlock, EmbedBuilder } from 'discord.js';
 import ms from 'ms';
 

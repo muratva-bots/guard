@@ -3,11 +3,12 @@ import { connect } from 'mongoose';
 
 import { Utils } from './Utils';
 import config from '../../config.json';
-import { ISettings } from '@guard-bot/models';
+import { ISettings } from '@/models';
+import { SafeFlags } from '@/enums';
 
 export class Client extends Core {
     commands = new Collection<string, Guard.ICommand>();
-    safes = new Collection<string, Guard.TSafe[]>();
+    safes = new Collection<string, SafeFlags[]>();
     servers = new Collection<string, ISettings>();
     staffs = new Collection<string, string[]>();
     limits = new Collection<string, Guard.ILimit>();

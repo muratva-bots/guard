@@ -10,9 +10,9 @@
         "baseUrl": ".",
         "typeRoots": ["node_modules/@types", "src/@types"],
         "paths": {
-            "@guard-bot/structures": ["src/structures/index.ts"],
-            "@guard-bot/models": ["src/models/index.ts"],
-            "@guard-bot/enums": ["src/enums/index.ts"]
+            "@/structures": ["src/structures/index.ts"],
+            "@/models": ["src/models/index.ts"],
+            "@/enums": ["src/enums/index.ts"]
         }
     },
     "include": ["src/**/*"]

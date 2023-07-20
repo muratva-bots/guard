@@ -1,5 +1,5 @@
-import { ChannelModel, GuildModel, RoleModel } from '@guard-bot/models';
-import { Client } from '@guard-bot/structures';
+import { ChannelModel, GuildModel, RoleModel } from '@/models';
+import { Client } from '@/structures';
 import { ActionRowBuilder, ButtonBuilder, GuildChannel, Message } from 'discord.js';
 import startHelpers from './startHelpers';
 

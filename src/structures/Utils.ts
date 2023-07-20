@@ -1,7 +1,7 @@
 import { readdirSync } from 'fs';
 import { resolve } from 'path';
 
-import { Client } from '@guard-bot/structures';
+import { Client } from '@/structures';
 import {
     Guild,
     NewsChannel,
@@ -22,7 +22,7 @@ import {
     IPermissions,
     IRole,
     RoleModel,
-} from '@guard-bot/models';
+} from '@/models';
 
 export class Utils {
     private client: Client;

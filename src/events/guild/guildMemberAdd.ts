@@ -1,4 +1,4 @@
-import { SafeFlags } from '@guard-bot/enums';
+import { SafeFlags } from '@/enums';
 import { AuditLogEvent, Events, inlineCode } from 'discord.js';
 
 const GuildMemberAdd: Guard.IEvent = {

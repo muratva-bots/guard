@@ -1,4 +1,4 @@
-import { Client } from '@guard-bot/structures';
+import { Client } from '@/structures';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, Message } from 'discord.js';
 
 export async function setDanger(client: Client, question: Message, row: ActionRowBuilder<ButtonBuilder>) {

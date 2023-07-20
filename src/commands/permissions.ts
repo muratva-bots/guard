@@ -1,4 +1,4 @@
-import { GuildModel } from '@guard-bot/models';
+import { GuildModel } from '@/models';
 import { EmbedBuilder, bold, codeBlock, inlineCode } from 'discord.js';
 
 const Permissions: Guard.ICommand = {

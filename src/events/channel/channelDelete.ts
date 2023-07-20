@@ -1,4 +1,4 @@
-import { LimitFlags, OperationFlags, SafeFlags } from '@guard-bot/enums';
+import { LimitFlags, OperationFlags, SafeFlags } from '@/enums';
 import { AuditLogEvent, Events, Guild, inlineCode } from 'discord.js';
 
 const ChannelDelete: Guard.IEvent = {

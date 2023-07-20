@@ -1,4 +1,4 @@
-import { Client as Core } from '@guard-bot/structures';
+import { Client as Core } from '@/structures';
 import { Client, GatewayIntentBits } from 'discord.js';
 
 function startHelpers(client: Core) {

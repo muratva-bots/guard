@@ -1,4 +1,4 @@
-import { Client } from '@guard-bot/structures';
+import { Client } from '@/structures';
 import mongoose from 'mongoose';
 
 const client = new Client();

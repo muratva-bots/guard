@@ -1,5 +1,5 @@
-import { LimitFlags, OperationFlags, SafeFlags } from '@guard-bot/enums';
-import { ChannelModel } from '@guard-bot/models';
+import { LimitFlags, OperationFlags, SafeFlags } from '@/enums';
+import { ChannelModel } from '@/models';
 import { AuditLogEvent, Events, Guild, GuildChannel, inlineCode } from 'discord.js';
 
 const ChannelUpdate: Guard.IEvent = {
