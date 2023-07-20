@@ -4,7 +4,7 @@ import { EmbedBuilder, Guild, codeBlock, inlineCode } from 'discord.js';
 
 async function checkOfflineAndWeb(client: Client, guild: Guild) {
     const guildData = client.servers.get(guild.id);
-    if (!guildData) return;
+    if (!guildData || (!guildData.settings.web && !guildData.settings.offline)) return;
 
     const embed = new EmbedBuilder({
         color: client.utils.getRandomColor(),
