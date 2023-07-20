@@ -155,7 +155,7 @@ export class Utils {
 
         userLimits.operations.push(operation);
         const diff = now - userLimits.lastDate;
-        if (diff < time && userLimits.operations.length >= limit) {
+        if (diff < time && userLimits.operations.length > limit) {
             return {
                 isWarn: false,
                 maxCount: limit,
