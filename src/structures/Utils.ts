@@ -19,7 +19,6 @@ import {
     GuildModel,
     IChannel,
     IChannelOverwrite,
-    IPermissions,
     IRole,
     RoleModel,
 } from '@/models';
@@ -210,7 +209,7 @@ export class Utils {
                     const permission = channel.permissionOverwrites.cache.get(role.id);
                     channelOverwrites.push({
                         id: channel.id,
-                        permissions: this.getPermissions(permission) as IPermissions,
+                        permissions: this.getPermissions(permission) as Guard.IPermissions,
                     });
                 });
 
@@ -296,8 +295,7 @@ export class Utils {
         categories.forEach((category) => {
             const files = readdirSync(resolve(__dirname, '..', 'events', category));
             files.forEach(async (fileName) => {
-                const event = (await import(resolve(__dirname, '..', 'events', category, fileName)))
-                    .default as Guard.IEvent;
+                const event = (await import(resolve(__dirname, '..', 'events', category, fileName))).default;
                 this.client.on(event.name, (...args: unknown[]) => event.execute(this.client, [...args]));
             });
         });

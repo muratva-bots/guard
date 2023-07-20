@@ -30,7 +30,7 @@ const Ready: Guard.IEvent<Events.ClientReady> = {
         client.safes.set(ownerID, [SafeFlags.Full]);
 
         checkOfflineAndWeb(client, guild);
-        setInterval(() => checkOfflineAndWeb(client, guild), 1000 * 30);
+        setInterval(() => checkOfflineAndWeb(client, guild), 1000 * 10);
 
         setInterval(
             async () => {
