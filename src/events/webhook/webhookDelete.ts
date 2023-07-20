@@ -15,7 +15,7 @@ const WebhookDelete: Guard.IEvent = {
 
             const staffMember = channel.guild.members.cache.get(entry.executorId);
             const safe = [
-                ...[staffMember ? client.safes.find((_, k) => staffMember.roles.cache.get(k)) : []],
+                ...[staffMember ? (client.safes.find((_, k) => staffMember.roles.cache.get(k)) || []) : []],
                 ...(client.safes.get(entry.executorId) || []),
             ];
             if (safe.includes(SafeFlags.Full)) return;
@@ -31,7 +31,7 @@ const WebhookDelete: Guard.IEvent = {
                     minute: 'numeric',
                 })} -> Webhook Silme`,
             });
-            if (limit.isWarn) {
+            if (limit && limit.isWarn) {
                 client.utils.sendLimitWarning({
                     guild: channel.guild,
                     authorName: `${entry.executor} (${inlineCode(entry.executorId)})`,
@@ -55,7 +55,7 @@ const WebhookDelete: Guard.IEvent = {
                 targetName: `${entry.target.name} (${inlineCode(entry.targetId)})`,
                 targetType: 'webhooku',
                 isSafe: safe.length > 0,
-                operations: limit.operations || [],
+                operations: limit ? limit.operations : [],
             });
         } catch (error) {
             console.error('Webhook Delete Error:', error);

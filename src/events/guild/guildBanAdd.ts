@@ -15,7 +15,7 @@ const GuildBanAdd: Guard.IEvent = {
 
             const staffMember = ban.guild.members.cache.get(entry.executorId);
             const safe = [
-                ...[staffMember ? client.safes.find((_, k) => staffMember.roles.cache.get(k)) : []],
+                ...[staffMember ? (client.safes.find((_, k) => staffMember.roles.cache.get(k)) || []) : []],
                 ...(client.safes.get(entry.executorId) || []),
             ];
             if (safe.includes(SafeFlags.Full)) return;
@@ -31,7 +31,7 @@ const GuildBanAdd: Guard.IEvent = {
                     minute: 'numeric',
                 })} -> Üye Yasaklama`,
             });
-            if (limit.isWarn) {
+            if (limit && limit.isWarn) {
                 client.utils.sendLimitWarning({
                     guild: ban.guild,
                     authorName: `${entry.executor} (${inlineCode(entry.executorId)})`,
@@ -56,7 +56,7 @@ const GuildBanAdd: Guard.IEvent = {
                 targetName: `${entry.target.username} (${inlineCode(entry.target.id)})`,
                 targetType: 'sunucudan',
                 isSafe: safe.length > 0,
-                operations: limit.operations || [],
+                operations: limit ? limit.operations : [],
             });
         } catch (error) {
             console.error('Guild Ban Add Error:', error);

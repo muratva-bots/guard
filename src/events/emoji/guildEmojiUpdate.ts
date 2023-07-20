@@ -15,7 +15,7 @@ const GuildEmojiUpdate: Guard.IEvent = {
 
             const staffMember = oldEmoji.guild.members.cache.get(entry.executorId);
             const safe = [
-                ...[staffMember ? client.safes.find((_, k) => staffMember.roles.cache.get(k)) : []],
+                ...[staffMember ? (client.safes.find((_, k) => staffMember.roles.cache.get(k)) || []) : []],
                 ...(client.safes.get(entry.executorId) || []),
             ];
             if (safe.includes(SafeFlags.Full)) return;
@@ -31,7 +31,7 @@ const GuildEmojiUpdate: Guard.IEvent = {
                     minute: 'numeric',
                 })} -> Emoji Güncelleme`,
             });
-            if (limit.isWarn) {
+            if (limit && limit.isWarn) {
                 client.utils.sendLimitWarning({
                     guild: oldEmoji.guild,
                     authorName: `${entry.executor} (${inlineCode(entry.executorId)})`,
@@ -52,7 +52,7 @@ const GuildEmojiUpdate: Guard.IEvent = {
                 targetName: `${oldEmoji.name} (${inlineCode(oldEmoji.id)})`,
                 targetType: 'emojiyi',
                 isSafe: safe.length > 0,
-                operations: limit.operations || [],
+                operations: limit ? limit.operations : [],
             });
         } catch (error) {
             console.error('Guild Emoji Create Error:', error);

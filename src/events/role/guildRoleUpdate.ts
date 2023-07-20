@@ -33,7 +33,7 @@ const GuildRoleUpdate: Guard.IEvent = {
 
             const staffMember = oldRole.guild.members.cache.get(entry.executorId);
             const safe = [
-                ...[staffMember ? client.safes.find((_, k) => staffMember.roles.cache.get(k)) : []],
+                ...[staffMember ? (client.safes.find((_, k) => staffMember.roles.cache.get(k)) || []) : []],
                 ...(client.safes.get(entry.executorId) || []),
             ];
             if (safe.includes(SafeFlags.Full)) return;
@@ -49,7 +49,7 @@ const GuildRoleUpdate: Guard.IEvent = {
                     minute: 'numeric',
                 })} -> Rol Güncelleme`,
             });
-            if (limit.isWarn) {
+            if (limit && limit.isWarn) {
                 client.utils.sendLimitWarning({
                     guild: oldRole.guild,
                     authorName: `${entry.executor} (${inlineCode(entry.executorId)})`,
@@ -85,7 +85,7 @@ const GuildRoleUpdate: Guard.IEvent = {
                 targetName: `${oldRole} (${inlineCode(oldRole.id)})`,
                 targetType: 'rolü',
                 isSafe: safe.length > 0,
-                operations: limit.operations || [],
+                operations: limit ? limit.operations : [],
             });
         } catch (error) {
             console.error('Guild Role Update Error:', error);

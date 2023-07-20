@@ -17,7 +17,7 @@ const ChannelCreate: Guard.IEvent = {
 
             const staffMember = channel.guild.members.cache.get(entry.executorId);
             const safe = [
-                ...[staffMember ? client.safes.find((_, k) => staffMember.roles.cache.get(k)) : []],
+                ...[staffMember ? (client.safes.find((_, k) => staffMember.roles.cache.get(k)) || []) : []],
                 ...(client.safes.get(entry.executorId) || []),
             ];
             if (safe.includes(SafeFlags.Full)) return;
@@ -33,7 +33,7 @@ const ChannelCreate: Guard.IEvent = {
                     minute: 'numeric',
                 })} -> Kanal Oluşturma`,
             });
-            if (limit.isWarn) {
+            if (limit && limit.isWarn) {
                 client.utils.sendLimitWarning({
                     guild: channel.guild,
                     authorName: `${entry.executor} (${inlineCode(entry.executorId)})`,
@@ -58,7 +58,7 @@ const ChannelCreate: Guard.IEvent = {
                 targetName: `${channel.name} (${inlineCode(channel.id)})`,
                 targetType: 'kanalı',
                 isSafe: safe.length > 0,
-                operations: limit.operations || [],
+                operations: limit ? limit.operations : [],
             });
         } catch (error) {
             console.error('Channel Create Error:', error);

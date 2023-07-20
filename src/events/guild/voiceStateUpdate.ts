@@ -20,7 +20,7 @@ const VoiceStateUpdate: Guard.IEvent = {
 
             const staffMember = newState.guild.members.cache.get(entry.executorId);
             const safe = [
-                ...[staffMember ? client.safes.find((_, k) => staffMember.roles.cache.get(k)) : []],
+                ...[staffMember ? (client.safes.find((_, k) => staffMember.roles.cache.get(k)) || []) : []],
                 ...(client.safes.get(entry.executorId) || []),
             ];
             if (safe.includes(SafeFlags.Full)) return;
@@ -36,7 +36,7 @@ const VoiceStateUpdate: Guard.IEvent = {
                     minute: 'numeric',
                 })} -> Kullanıcıyı Sesten Atma`,
             });
-            if (limit.isWarn) {
+            if (limit && limit.isWarn) {
                 client.utils.sendLimitWarning({
                     guild: newState.guild,
                     authorName: `${entry.executor} (${inlineCode(entry.executorId)})`,
@@ -55,7 +55,7 @@ const VoiceStateUpdate: Guard.IEvent = {
                     targetName: `${newState.member} (${inlineCode(newState.id)})`,
                     targetType: 'ses bağlantısını',
                     isSafe: safe.length > 0,
-                    operations: limit.operations || [],
+                    operations: limit ? limit.operations : [],
                 });
             }
         } catch (error) {

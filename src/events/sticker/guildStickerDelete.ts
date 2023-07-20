@@ -15,7 +15,7 @@ const GuildStickerDelete: Guard.IEvent = {
 
             const staffMember = sticker.guild.members.cache.get(entry.executorId);
             const safe = [
-                ...[staffMember ? client.safes.find((_, k) => staffMember.roles.cache.get(k)) : []],
+                ...[staffMember ? (client.safes.find((_, k) => staffMember.roles.cache.get(k)) || []) : []],
                 ...(client.safes.get(entry.executorId) || []),
             ];
             if (safe.includes(SafeFlags.Full)) return;
@@ -31,7 +31,7 @@ const GuildStickerDelete: Guard.IEvent = {
                     minute: 'numeric',
                 })} -> Çıkartma Silme`,
             });
-            if (limit.isWarn) {
+            if (limit && limit.isWarn) {
                 client.utils.sendLimitWarning({
                     guild: sticker.guild,
                     authorName: `${entry.executor} (${inlineCode(entry.executorId)})`,
@@ -51,14 +51,15 @@ const GuildStickerDelete: Guard.IEvent = {
                 reason: 'Çıkartma silindiği için yeniden oluşturuldu!',
             });
 
+            console.log(safe)
             client.utils.sendPunishLog({
                 guild: sticker.guild,
                 action: safe.length ? 'silerek limite ulaştı' : 'sildi',
                 authorName: `${entry.executor} (${inlineCode(entry.executorId)})`,
-                targetName: `${sticker} (${inlineCode(sticker.id)})`,
+                targetName: `${sticker.name} (${inlineCode(sticker.id)})`,
                 targetType: 'çıkartmayı',
                 isSafe: safe.length > 0,
-                operations: limit.operations || [],
+                operations: limit ? limit.operations : [],
             });
         } catch (error) {
             console.error('Guild Sticker Delete Error:', error);

@@ -15,7 +15,7 @@ const GuildRoleCreate: Guard.IEvent = {
 
             const staffMember = role.guild.members.cache.get(entry.executorId);
             const safe = [
-                ...[staffMember ? client.safes.find((_, k) => staffMember.roles.cache.get(k)) : []],
+                ...[staffMember ? (client.safes.find((_, k) => staffMember.roles.cache.get(k)) || []) : []],
                 ...(client.safes.get(entry.executorId) || []),
             ];
             if (safe.includes(SafeFlags.Full)) return;
@@ -31,7 +31,7 @@ const GuildRoleCreate: Guard.IEvent = {
                     minute: 'numeric',
                 })} -> Rol Oluşturma`,
             });
-            if (limit.isWarn) {
+            if (limit && limit.isWarn) {
                 client.utils.sendLimitWarning({
                     guild: role.guild,
                     authorName: `${entry.executor} (${inlineCode(entry.executorId)})`,
@@ -56,7 +56,7 @@ const GuildRoleCreate: Guard.IEvent = {
                 targetName: `${role} (${inlineCode(role.id)})`,
                 targetType: 'rolü',
                 isSafe: safe.length > 0,
-                operations: limit.operations || [],
+                operations: limit ? limit.operations : [],
             });
         } catch (error) {
             console.error('Guild Role Create Error:', error);

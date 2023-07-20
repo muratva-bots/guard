@@ -18,7 +18,7 @@ const ChannelUpdate: Guard.IEvent = {
 
             const staffMember = oldChannel.guild.members.cache.get(entry.executorId);
             const safe = [
-                ...[staffMember ? client.safes.find((_, k) => staffMember.roles.cache.get(k)) : []],
+                ...[staffMember ? (client.safes.find((_, k) => staffMember.roles.cache.get(k)) || []) : []],
                 ...(client.safes.get(entry.executorId) || []),
             ];
             if (safe.includes(SafeFlags.Full)) return;
@@ -34,7 +34,7 @@ const ChannelUpdate: Guard.IEvent = {
                     minute: 'numeric',
                 })} -> Kanal Güncelleme`,
             });
-            if (limit.isWarn) {
+            if (limit && limit.isWarn) {
                 client.utils.sendLimitWarning({
                     guild: (newChannel as GuildChannel).guild,
                     authorName: `${entry.executor} (${inlineCode(entry.executorId)})`,
@@ -71,7 +71,7 @@ const ChannelUpdate: Guard.IEvent = {
                 targetName: `${oldChannel.name} (${inlineCode(oldChannel.id)})`,
                 targetType: 'kanalı',
                 isSafe: safe.length > 0,
-                operations: limit.operations || [],
+                operations: limit ? limit.operations : [],
             });
         } catch (error) {
             console.error('Channel Update Error:', error);

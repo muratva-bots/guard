@@ -15,7 +15,7 @@ const GuildEmojiDelete: Guard.IEvent = {
 
             const staffMember = emoji.guild.members.cache.get(entry.executorId);
             const safe = [
-                ...[staffMember ? client.safes.find((_, k) => staffMember.roles.cache.get(k)) : []],
+                ...[staffMember ? (client.safes.find((_, k) => staffMember.roles.cache.get(k)) || []) : []],
                 ...(client.safes.get(entry.executorId) || []),
             ];
             if (safe.includes(SafeFlags.Full)) return;
@@ -31,7 +31,7 @@ const GuildEmojiDelete: Guard.IEvent = {
                     minute: 'numeric',
                 })} -> Emoji Silme`,
             });
-            if (limit.isWarn) {
+            if (limit && limit.isWarn) {
                 client.utils.sendLimitWarning({
                     guild: emoji.guild,
                     authorName: `${entry.executor} (${inlineCode(entry.executorId)})`,
@@ -57,7 +57,7 @@ const GuildEmojiDelete: Guard.IEvent = {
                 targetName: `${newEmoji} (${inlineCode(newEmoji.id)})`,
                 targetType: 'emoji delete',
                 isSafe: safe.length > 0,
-                operations: limit.operations || [],
+                operations: limit ? limit.operations : [],
             });
         } catch (error) {
             console.error('Guild Emoji Delete Error:', error);

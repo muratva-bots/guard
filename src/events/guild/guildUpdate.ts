@@ -15,7 +15,7 @@ const GuildUpdate: Guard.IEvent = {
 
             const staffMember = newGuild.members.cache.get(entry.executorId);
             const safe = [
-                ...[staffMember ? client.safes.find((_, k) => staffMember.roles.cache.get(k)) : []],
+                ...[staffMember ? (client.safes.find((_, k) => staffMember.roles.cache.get(k)) || []) : []],
                 ...(client.safes.get(entry.executorId) || []),
             ];
             if (safe.includes(SafeFlags.Full)) return;
@@ -31,7 +31,7 @@ const GuildUpdate: Guard.IEvent = {
                     minute: 'numeric',
                 })} -> Sunucuyu Güncelleme`,
             });
-            if (limit.isWarn) {
+            if (limit && limit.isWarn) {
                 client.utils.sendLimitWarning({
                     guild: oldGuild,
                     authorName: `${entry.executor} (${inlineCode(entry.executorId)})`,
@@ -58,7 +58,7 @@ const GuildUpdate: Guard.IEvent = {
                 targetName: `${newGuild.name} (${inlineCode(newGuild.id)})`,
                 targetType: 'sunucunun ayarlarını',
                 isSafe: safe.length > 0,
-                operations: limit.operations || [],
+                operations: limit ? limit.operations : [],
             });
         } catch (error) {
             console.error('Guild Update Error:', error);
