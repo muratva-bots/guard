@@ -1,9 +1,9 @@
 import { SafeFlags } from '@/enums';
 import { AuditLogEvent, Events, inlineCode } from 'discord.js';
 
-const GuildMemberUpdate: Guard.IEvent = {
+const GuildMemberUpdate: Guard.IEvent<Events.GuildMemberUpdate> = {
     name: Events.GuildMemberUpdate,
-    execute: async (client, [oldMember, newMember]: Guard.ArgsOf<Events.GuildMemberUpdate>) => {
+    execute: async (client, oldMember, newMember) => {
         try {
             if (
                 !oldMember.roles.cache.every((r) => newMember.roles.cache.has(r.id)) ||

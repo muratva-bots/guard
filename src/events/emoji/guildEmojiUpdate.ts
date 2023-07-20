@@ -1,9 +1,9 @@
 import { LimitFlags, OperationFlags, SafeFlags } from '@/enums';
 import { AuditLogEvent, Events, inlineCode } from 'discord.js';
 
-const GuildEmojiUpdate: Guard.IEvent = {
+const GuildEmojiUpdate: Guard.IEvent<Events.GuildEmojiUpdate> = {
     name: Events.GuildEmojiUpdate,
-    execute: async (client, [oldEmoji, newEmoji]: Guard.ArgsOf<Events.GuildEmojiUpdate>) => {
+    execute: async (client, oldEmoji, newEmoji) => {
         try {
             const guildData = client.servers.get(oldEmoji.guild.id);
             if (!guildData || !guildData.settings.emoji) return;

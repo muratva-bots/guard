@@ -1,9 +1,9 @@
 import { LimitFlags, OperationFlags, SafeFlags } from '@/enums';
 import { AuditLogEvent, Events, inlineCode } from 'discord.js';
 
-const WebhookDelete: Guard.IEvent = {
+const WebhookDelete: Guard.IEvent<Events.WebhooksUpdate> = {
     name: Events.WebhooksUpdate,
-    execute: async (client, [channel]: Guard.ArgsOf<Events.WebhooksUpdate>) => {
+    execute: async (client, channel) => {
         try {
             const guildData = client.servers.get(channel.guildId);
             if (!guildData || !guildData.settings.webhook) return;

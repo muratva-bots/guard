@@ -9,3 +9,10 @@ client.connect();
 process.on('unhandledRejection', (error: Error) => console.log(`${error.name}: ${error.message}`));
 process.on('uncaughtException', (error: Error) => console.log(`${error.name}: ${error.message}`));
 */
+
+
+process.on("SIGINT", async () => {
+	client.destroy();
+    await mongoose.disconnect();
+	process.exit();
+});

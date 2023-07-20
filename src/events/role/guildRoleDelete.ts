@@ -1,9 +1,9 @@
 import { LimitFlags, OperationFlags, SafeFlags } from '@/enums';
 import { AuditLogEvent, Events, inlineCode } from 'discord.js';
 
-const GuildRoleDelete: Guard.IEvent = {
+const GuildRoleDelete: Guard.IEvent<Events.GuildRoleDelete> = {
     name: Events.GuildRoleDelete,
-    execute: async (client, [role]: Guard.ArgsOf<Events.GuildRoleDelete>) => {
+    execute: async (client, role) => {
         try {
             const guildData = client.servers.get(role.guild.id);
             if (!guildData || !guildData.settings.role) return;

@@ -1,9 +1,9 @@
 import { LimitFlags, OperationFlags, SafeFlags } from '@/enums';
 import { AuditLogEvent, Events, inlineCode } from 'discord.js';
 
-const VoiceStateUpdate: Guard.IEvent = {
+const VoiceStateUpdate: Guard.IEvent<Events.VoiceStateUpdate> = {
     name: Events.VoiceStateUpdate,
-    execute: async (client, [, newState]: Guard.ArgsOf<Events.VoiceStateUpdate>) => {
+    execute: async (client, _, newState) => {
         try {
             if (newState.channelId) return;
 

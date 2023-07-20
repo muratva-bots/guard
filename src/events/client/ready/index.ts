@@ -3,7 +3,7 @@ import { GuildModel, IGuild } from '@/models';
 import { Events, Team } from 'discord.js';
 import checkOfflineAndWeb from './checkOfflineAndWeb';
 
-const Ready: Guard.IEvent = {
+const Ready: Guard.IEvent<Events.ClientReady> = {
     name: Events.ClientReady,
     execute: async (client) => {
         const guild = client.guilds.cache.get('1130942265020383373');

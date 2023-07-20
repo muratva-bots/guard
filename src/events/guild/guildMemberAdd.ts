@@ -1,9 +1,9 @@
 import { SafeFlags } from '@/enums';
 import { AuditLogEvent, Events, inlineCode } from 'discord.js';
 
-const GuildMemberAdd: Guard.IEvent = {
+const GuildMemberAdd: Guard.IEvent<Events.GuildMemberAdd> = {
     name: Events.GuildMemberAdd,
-    execute: async (client, [member]: Guard.ArgsOf<Events.GuildMemberAdd>) => {
+    execute: async (client, member) => {
         try {
             if (!member.user.bot) return;
 

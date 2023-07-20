@@ -1,9 +1,9 @@
 import { LimitFlags, OperationFlags, SafeFlags } from '@/enums';
 import { AuditLogEvent, Events, inlineCode } from 'discord.js';
 
-const GuildStickerCreate: Guard.IEvent = {
+const GuildStickerCreate: Guard.IEvent<Events.GuildStickerCreate> = {
     name: Events.GuildStickerCreate,
-    execute: async (client, [sticker]: Guard.ArgsOf<Events.GuildStickerCreate>) => {
+    execute: async (client, sticker) => {
         try {
             const guildData = client.servers.get(sticker.guild.id);
             if (!guildData || !guildData.settings.sticker) return;

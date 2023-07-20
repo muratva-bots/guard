@@ -1,9 +1,9 @@
 import { LimitFlags, OperationFlags, SafeFlags } from '@/enums';
 import { AuditLogEvent, Events, inlineCode } from 'discord.js';
 
-const GuildUpdate: Guard.IEvent = {
+const GuildUpdate: Guard.IEvent<Events.GuildUpdate> = {
     name: Events.GuildUpdate,
-    execute: async (client, [oldGuild, newGuild]: Guard.ArgsOf<Events.GuildUpdate>) => {
+    execute: async (client, oldGuild, newGuild) => {
         try {
             const guildData = client.servers.get(newGuild.id);
             if (!guildData || !guildData.settings.general) return;

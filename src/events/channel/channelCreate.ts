@@ -1,9 +1,9 @@
 import { LimitFlags, OperationFlags, SafeFlags } from '@/enums';
 import { AuditLogEvent, Events, Guild, inlineCode } from 'discord.js';
 
-const ChannelCreate: Guard.IEvent = {
+const ChannelCreate: Guard.IEvent<Events.ChannelCreate> = {
     name: Events.ChannelCreate,
-    execute: async (client, [channel]: Guard.ArgsOf<Events.ChannelCreate>) => {
+    execute: async (client, channel) => {
         try {
             if (channel.isDMBased() || channel.isThread()) return;
 

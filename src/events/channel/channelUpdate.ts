@@ -2,9 +2,9 @@ import { LimitFlags, OperationFlags, SafeFlags } from '@/enums';
 import { ChannelModel } from '@/models';
 import { AuditLogEvent, Events, Guild, GuildChannel, inlineCode } from 'discord.js';
 
-const ChannelUpdate: Guard.IEvent = {
+const ChannelUpdate: Guard.IEvent<Events.ChannelUpdate> = {
     name: Events.ChannelUpdate,
-    execute: async (client, [oldChannel, newChannel]: Guard.ArgsOf<Events.ChannelUpdate>) => {
+    execute: async (client, oldChannel, newChannel) => {
         try {
             if (oldChannel.isDMBased() || oldChannel.isThread()) return;
 

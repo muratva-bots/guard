@@ -1,5 +1,26 @@
 import { Schema, model } from 'mongoose';
-import { IChannel } from './dto';
+import { OverwriteType } from 'discord.js';
+
+export interface IPermissionOverwrites {
+    id: string;
+    type: OverwriteType;
+    permissions: Guard.IPermissions;
+}
+
+export interface IChannel {
+    guild: string;
+    name: string;
+    id: string;
+    type: number;
+    rateLimitPerUser: number;
+    bitrate: number;
+    parent: string;
+    topic: string;
+    position: number;
+    userLimit: number;
+    nsfw: boolean;
+    permissionOverwrites: IPermissionOverwrites[];
+}
 
 const channelSchema = new Schema({
     guild: String,

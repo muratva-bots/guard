@@ -1,8 +1,8 @@
-import { SafeFlags } from '@/enums';
+import { Events } from 'discord.js';
 
-const MessageCreate: Guard.IEvent = {
-    name: 'messageCreate',
-    execute: (client, [message]: Guard.ArgsOf<'messageCreate'>) => {
+const MessageCreate: Guard.IEvent<Events.MessageCreate> = {
+    name: Events.MessageCreate,
+    execute: (client, message) => {
         if (!message.content.startsWith(client.config.PREFIX)) return;
 
         // const ownerID =

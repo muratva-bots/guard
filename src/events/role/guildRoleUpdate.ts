@@ -2,9 +2,9 @@ import { LimitFlags, OperationFlags, SafeFlags } from '@/enums';
 import { RoleModel } from '@/models';
 import { AuditLogEvent, Events, inlineCode } from 'discord.js';
 
-const GuildRoleUpdate: Guard.IEvent = {
+const GuildRoleUpdate: Guard.IEvent<Events.GuildRoleUpdate> = {
     name: Events.GuildRoleUpdate,
-    execute: async (client, [oldRole, newRole]: Guard.ArgsOf<Events.GuildRoleUpdate>) => {
+    execute: async (client, oldRole, newRole) => {
         try {
             const guildData = client.servers.get(oldRole.guild.id);
             if (!guildData || !guildData.settings.role) return;

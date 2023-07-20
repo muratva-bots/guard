@@ -1,3 +1,3 @@
-export * from './guild';
-export * from './role';
-export * from './channel';
+export * from './guildModel';
+export * from './roleModel';
+export * from './channelModel';

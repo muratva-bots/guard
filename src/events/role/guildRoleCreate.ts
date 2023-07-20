@@ -1,9 +1,9 @@
 import { LimitFlags, OperationFlags, SafeFlags } from '@/enums';
 import { AuditLogEvent, Events, inlineCode } from 'discord.js';
 
-const GuildRoleCreate: Guard.IEvent = {
+const GuildRoleCreate: Guard.IEvent<Events.GuildRoleCreate> = {
     name: Events.GuildRoleCreate,
-    execute: async (client, [role]: Guard.ArgsOf<Events.GuildRoleCreate>) => {
+    execute: async (client, role) => {
         try {
             const guildData = client.servers.get(role.guild.id);
             if (!guildData || !guildData.settings.role) return;

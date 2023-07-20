@@ -47,9 +47,9 @@ const limits = [
     },
 ];
 
-const InteractionCreate: Guard.IEvent = {
+const InteractionCreate: Guard.IEvent<Events.InteractionCreate> = {
     name: Events.InteractionCreate,
-    execute: async (client, [interaction]: Guard.ArgsOf<Events.InteractionCreate>) => {
+    execute: async (client, interaction) => {
         if (!interaction.isModalSubmit() || !interaction.customId.startsWith('limit')) return;
 
         const guildData = client.servers.get(interaction.guildId);

@@ -1,9 +1,9 @@
 import { LimitFlags, OperationFlags, SafeFlags } from '@/enums';
 import { AuditLogEvent, Events, Guild, inlineCode } from 'discord.js';
 
-const ChannelDelete: Guard.IEvent = {
+const ChannelDelete: Guard.IEvent<Events.ChannelDelete> = {
     name: Events.ChannelDelete,
-    execute: async (client, [channel]: Guard.ArgsOf<Events.ChannelDelete>) => {
+    execute: async (client, channel) => {
         try {
             if (channel.isDMBased() || channel.isThread()) return;
 

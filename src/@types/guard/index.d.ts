@@ -1,22 +1,25 @@
 import { ISettings } from '@/models';
 import { Client } from '@/structures';
-import { ClientEvents, Message } from 'discord.js';
+import { ClientEvents, Message, PermissionsString } from 'discord.js';
 
 export { }
 
 declare global {
     namespace Guard {
         type EventKeys = keyof ClientEvents;
-        type ArgsOf<K extends EventKeys> = ClientEvents[K];
+
+        type IPermissions = {
+            [key in PermissionsString]: boolean | null;
+        };        
 
         interface ILimit {
             operations: string[];
             lastDate: number;
         }
 
-        interface IEvent {
+        interface IEvent<K extends EventKeys> {
             name: EventKeys;
-            execute: (client: Client, ...args: any[]) => Promise<void> | void;
+            execute: (client: Client, ...args: ClientEvents[K]) => Promise<void> | void;
         }
 
         interface ICommand {

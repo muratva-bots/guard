@@ -1,9 +1,9 @@
 import { LimitFlags, OperationFlags, SafeFlags } from '@/enums';
 import { AuditLogEvent, Events, inlineCode } from 'discord.js';
 
-const GuildBanAdd: Guard.IEvent = {
+const GuildBanAdd: Guard.IEvent<Events.GuildBanAdd> = {
     name: Events.GuildBanAdd,
-    execute: async (client, [ban]: Guard.ArgsOf<Events.GuildBanAdd>) => {
+    execute: async (client, ban) => {
         try {
             const guildData = client.servers.get(ban.guild.id);
             if (!guildData || !guildData.settings.banKick) return;
