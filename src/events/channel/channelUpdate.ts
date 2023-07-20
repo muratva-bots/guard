@@ -1,6 +1,6 @@
-import { LimitFlags, SafeFlags } from '@guard-bot/enums';
+import { LimitFlags, OperationFlags, SafeFlags } from '@guard-bot/enums';
 import { ChannelModel } from '@guard-bot/models';
-import { AuditLogEvent, Events, GuildChannel, inlineCode } from 'discord.js';
+import { AuditLogEvent, Events, Guild, GuildChannel, inlineCode } from 'discord.js';
 
 const ChannelUpdate: Guard.IEvent = {
     name: Events.ChannelUpdate,
@@ -11,14 +11,12 @@ const ChannelUpdate: Guard.IEvent = {
             const guildData = client.servers.get(oldChannel.guildId);
             if (!guildData || !guildData.settings.channel) return;
 
-            const entry = await oldChannel.guild
-                .fetchAuditLogs({ limit: 1, type: AuditLogEvent.ChannelUpdate })
-                .then((audit) => audit.entries.first());
-            if (!entry || !entry.executor || entry.executor.bot || Date.now() - entry.createdTimestamp > 5000) return;
+            const entry = await getEntry((newChannel as GuildChannel).guild);
+            if (!entry) return;
 
             const staffMember = oldChannel.guild.members.cache.get(entry.executorId);
             const safe = [
-                ...[staffMember ? (client.safes.find((_, k) => staffMember.roles.cache.get(k)) || []) : []],
+                ...[staffMember ? client.safes.find((_, k) => staffMember.roles.cache.get(k)) || [] : []],
                 ...(client.safes.get(entry.executorId) || []),
             ].flat(1);
             if (safe.includes(SafeFlags.Full)) return;
@@ -29,10 +27,7 @@ const ChannelUpdate: Guard.IEvent = {
                 limit: guildData.settings.channelLimitCount,
                 time: guildData.settings.channelLimitTime,
                 canCheck: safe.includes(SafeFlags.Channel),
-                operation: `${new Date().toLocaleDateString('tr-TR', {
-                    hour: 'numeric',
-                    minute: 'numeric',
-                })} -> Kanal Güncelleme`,
+                operation: OperationFlags.ChannelUpdate,
             });
             if (limit && limit.isWarn) {
                 client.utils.sendLimitWarning({
@@ -80,3 +75,37 @@ const ChannelUpdate: Guard.IEvent = {
 };
 
 export default ChannelUpdate;
+
+async function getEntry(guild: Guild) {
+    try {
+        const now = Date.now();
+        const channelEntry = await guild
+            .fetchAuditLogs({ limit: 1, type: AuditLogEvent.ChannelUpdate })
+            .then((audit) => audit.entries.first());
+        if (
+            channelEntry &&
+            channelEntry.executor &&
+            !channelEntry.executor.bot &&
+            5000 > now - channelEntry.createdTimestamp
+        ) {
+            return channelEntry;
+        }
+
+        const overwriteEntry = await guild
+            .fetchAuditLogs({ limit: 1, type: AuditLogEvent.ChannelOverwriteUpdate })
+            .then((audit) => audit.entries.first());
+        if (
+            overwriteEntry &&
+            overwriteEntry.executor &&
+            !overwriteEntry.executor.bot &&
+            5000 > now - overwriteEntry.createdTimestamp
+        ) {
+            return overwriteEntry;
+        }
+
+        return null;
+    } catch (error) {
+        console.error('getEntry Error:', error);
+        return null;
+    }
+}

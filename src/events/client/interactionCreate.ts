@@ -1,5 +1,5 @@
-import { GuildModel } from "@guard-bot/models";
-import { Events, inlineCode, codeBlock, EmbedBuilder } from "discord.js";
+import { GuildModel } from '@guard-bot/models';
+import { Events, inlineCode, codeBlock, EmbedBuilder } from 'discord.js';
 import ms from 'ms';
 
 const limits = [
@@ -50,7 +50,7 @@ const limits = [
 const InteractionCreate: Guard.IEvent = {
     name: Events.InteractionCreate,
     execute: async (client, [interaction]: Guard.ArgsOf<Events.InteractionCreate>) => {
-        if (!interaction.isModalSubmit() || !interaction.customId.startsWith("limit")) return;
+        if (!interaction.isModalSubmit() || !interaction.customId.startsWith('limit')) return;
 
         const guildData = client.servers.get(interaction.guildId);
         if (!guildData) return;
@@ -105,23 +105,23 @@ const InteractionCreate: Guard.IEvent = {
                                         (l) =>
                                             `→ ${l.name}: ${ms(
                                                 guildData.settings[l.time] || client.config.DEFAULTS.LIMIT.TIME,
-                                            )} süre içinde ${guildData.settings[l.count] ||
-                                            client.config.DEFAULTS.LIMIT.COUNT
+                                            )} süre içinde ${
+                                                guildData.settings[l.count] || client.config.DEFAULTS.LIMIT.COUNT
                                             }`,
                                     )
                                     .join('\n'),
                             ].join('\n'),
                         ),
                     ].join('\n'),
-                })
+                }),
             ],
         });
 
         await interaction.reply({
             content: 'Limit ayarları başarıyla güncellendi!',
             ephemeral: true,
-        })
-    }
-}
+        });
+    },
+};
 
 export default InteractionCreate;

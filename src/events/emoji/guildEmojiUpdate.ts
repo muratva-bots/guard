@@ -1,4 +1,4 @@
-import { LimitFlags, SafeFlags } from '@guard-bot/enums';
+import { LimitFlags, OperationFlags, SafeFlags } from '@guard-bot/enums';
 import { AuditLogEvent, Events, inlineCode } from 'discord.js';
 
 const GuildEmojiUpdate: Guard.IEvent = {
@@ -15,7 +15,7 @@ const GuildEmojiUpdate: Guard.IEvent = {
 
             const staffMember = oldEmoji.guild.members.cache.get(entry.executorId);
             const safe = [
-                ...[staffMember ? (client.safes.find((_, k) => staffMember.roles.cache.get(k)) || []) : []],
+                ...[staffMember ? client.safes.find((_, k) => staffMember.roles.cache.get(k)) || [] : []],
                 ...(client.safes.get(entry.executorId) || []),
             ].flat(1);
             if (safe.includes(SafeFlags.Full)) return;
@@ -26,10 +26,7 @@ const GuildEmojiUpdate: Guard.IEvent = {
                 limit: guildData.settings.emojiLimitCount,
                 time: guildData.settings.emojiLimitTime,
                 canCheck: safe.includes(SafeFlags.Emoji),
-                operation: `${new Date().toLocaleDateString('tr-TR', {
-                    hour: 'numeric',
-                    minute: 'numeric',
-                })} -> Emoji Güncelleme`,
+                operation: OperationFlags.EmojiUpdate,
             });
             if (limit && limit.isWarn) {
                 client.utils.sendLimitWarning({

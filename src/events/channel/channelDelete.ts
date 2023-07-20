@@ -1,5 +1,5 @@
-import { LimitFlags, SafeFlags } from '@guard-bot/enums';
-import { AuditLogEvent, Events, inlineCode } from 'discord.js';
+import { LimitFlags, OperationFlags, SafeFlags } from '@guard-bot/enums';
+import { AuditLogEvent, Events, Guild, inlineCode } from 'discord.js';
 
 const ChannelDelete: Guard.IEvent = {
     name: Events.ChannelDelete,
@@ -10,14 +10,12 @@ const ChannelDelete: Guard.IEvent = {
             const guildData = client.servers.get(channel.guildId);
             if (!guildData || !guildData.settings.channel) return;
 
-            const entry = await channel.guild
-                .fetchAuditLogs({ limit: 1, type: AuditLogEvent.ChannelDelete })
-                .then((audit) => audit.entries.first());
-            if (!entry || !entry.executor || entry.executor.bot || Date.now() - entry.createdTimestamp > 5000) return;
+            const entry = await getEntry(channel.guild);
+            if (!entry) return;
 
             const staffMember = channel.guild.members.cache.get(entry.executorId);
             const safe = [
-                ...[staffMember ? (client.safes.find((_, k) => staffMember.roles.cache.get(k)) || []) : []],
+                ...[staffMember ? client.safes.find((_, k) => staffMember.roles.cache.get(k)) || [] : []],
                 ...(client.safes.get(entry.executorId) || []),
             ].flat(1);
             if (safe.includes(SafeFlags.Full)) return;
@@ -28,10 +26,7 @@ const ChannelDelete: Guard.IEvent = {
                 limit: guildData.settings.channelLimitCount,
                 time: guildData.settings.channelLimitTime,
                 canCheck: safe.includes(SafeFlags.Channel),
-                operation: `${new Date().toLocaleDateString('tr-TR', {
-                    hour: 'numeric',
-                    minute: 'numeric',
-                })} -> Kanal Silme`,
+                operation: OperationFlags.ChannelDelete,
             });
             if (limit && limit.isWarn) {
                 client.utils.sendLimitWarning({
@@ -66,3 +61,37 @@ const ChannelDelete: Guard.IEvent = {
 };
 
 export default ChannelDelete;
+
+async function getEntry(guild: Guild) {
+    try {
+        const now = Date.now();
+        const channelEntry = await guild
+            .fetchAuditLogs({ limit: 1, type: AuditLogEvent.ChannelDelete })
+            .then((audit) => audit.entries.first());
+        if (
+            channelEntry &&
+            channelEntry.executor &&
+            !channelEntry.executor.bot &&
+            5000 > now - channelEntry.createdTimestamp
+        ) {
+            return channelEntry;
+        }
+
+        const overwriteEntry = await guild
+            .fetchAuditLogs({ limit: 1, type: AuditLogEvent.ChannelOverwriteDelete })
+            .then((audit) => audit.entries.first());
+        if (
+            overwriteEntry &&
+            overwriteEntry.executor &&
+            !overwriteEntry.executor.bot &&
+            5000 > now - overwriteEntry.createdTimestamp
+        ) {
+            return overwriteEntry;
+        }
+
+        return null;
+    } catch (error) {
+        console.error('getEntry Error:', error);
+        return null;
+    }
+}

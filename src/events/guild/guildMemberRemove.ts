@@ -1,4 +1,4 @@
-import { LimitFlags, SafeFlags } from '@guard-bot/enums';
+import { LimitFlags, OperationFlags, SafeFlags } from '@guard-bot/enums';
 import { AuditLogEvent, Events, Guild, inlineCode } from 'discord.js';
 
 const GuildMemberRemove: Guard.IEvent = {
@@ -14,7 +14,7 @@ const GuildMemberRemove: Guard.IEvent = {
             const { entry, entryType } = entryResult;
             const staffMember = member.guild.members.cache.get(entry.executorId);
             const safe = [
-                ...[staffMember ? (client.safes.find((_, k) => staffMember.roles.cache.get(k)) || []) : []],
+                ...[staffMember ? client.safes.find((_, k) => staffMember.roles.cache.get(k)) || [] : []],
                 ...(client.safes.get(entry.executorId) || []),
             ].flat(1);
             if (safe.includes(SafeFlags.Full)) return;
@@ -25,10 +25,7 @@ const GuildMemberRemove: Guard.IEvent = {
                 limit: guildData.settings.banKickLimitCount,
                 time: guildData.settings.banKickLimitTime,
                 canCheck: safe.includes(SafeFlags.BanKick) && entryType !== 'PRUNE',
-                operation: `${new Date().toLocaleDateString('tr-TR', {
-                    hour: 'numeric',
-                    minute: 'numeric',
-                })} -> Üye Atma`,
+                operation: OperationFlags.Kick,
             });
             if (limit && limit.isWarn) {
                 client.utils.sendLimitWarning({

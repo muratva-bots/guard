@@ -1,4 +1,4 @@
-import { LimitFlags, SafeFlags } from '@guard-bot/enums';
+import { LimitFlags, OperationFlags, SafeFlags } from '@guard-bot/enums';
 import { AuditLogEvent, Events, inlineCode } from 'discord.js';
 
 const VoiceStateUpdate: Guard.IEvent = {
@@ -20,7 +20,7 @@ const VoiceStateUpdate: Guard.IEvent = {
 
             const staffMember = newState.guild.members.cache.get(entry.executorId);
             const safe = [
-                ...[staffMember ? (client.safes.find((_, k) => staffMember.roles.cache.get(k)) || []) : []],
+                ...[staffMember ? client.safes.find((_, k) => staffMember.roles.cache.get(k)) || [] : []],
                 ...(client.safes.get(entry.executorId) || []),
             ].flat(1);
             if (safe.includes(SafeFlags.Full)) return;
@@ -31,10 +31,7 @@ const VoiceStateUpdate: Guard.IEvent = {
                 limit: guildData.settings.voiceKickLimitCount,
                 time: guildData.settings.voiceKickLimitTime,
                 canCheck: safe.includes(SafeFlags.VoiceKick),
-                operation: `${new Date().toLocaleDateString('tr-TR', {
-                    hour: 'numeric',
-                    minute: 'numeric',
-                })} -> Kullanıcıyı Sesten Atma`,
+                operation: OperationFlags.VoiceKick,
             });
             if (limit && limit.isWarn) {
                 client.utils.sendLimitWarning({

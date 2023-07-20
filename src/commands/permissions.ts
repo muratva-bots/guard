@@ -19,16 +19,16 @@ const Permissions: Guard.ICommand = {
                 name: message.author.username,
                 icon_url: message.author.displayAvatarURL({ size: 4096, forceStatic: true }),
             },
-            color: client.utils.getRandomColor()
+            color: client.utils.getRandomColor(),
         });
 
         const loadingMessage = await message.channel.send({
-            embeds: [embed.setDescription("İşlem yapılıyor...")]
+            embeds: [embed.setDescription('İşlem yapılıyor...')],
         });
 
         const processRoles: string[] = [];
         if (operation === 'aç') {
-            for (const permission of (guildData.settings.permissions || [])) {
+            for (const permission of guildData.settings.permissions || []) {
                 const role = message.guild.roles.cache.find((r) => r.name === permission.name);
                 if (role) {
                     role.setPermissions(permission.allow);
@@ -36,7 +36,7 @@ const Permissions: Guard.ICommand = {
                 }
             }
         } else {
-            console.log(guildData.settings)
+            console.log(guildData.settings);
             guildData.settings.permissions = [];
 
             const dangerRoles = message.guild.roles.cache.filter(
@@ -50,26 +50,30 @@ const Permissions: Guard.ICommand = {
                 await role.setPermissions([]);
                 processRoles.push(`→ ${role.name}`);
             }
-            
+
             await GuildModel.updateOne(
                 { id: message.guildId },
-                { $set: { "settings.guard": guildData.settings } },
-                { upsert: true }
+                { $set: { 'settings.guard': guildData.settings } },
+                { upsert: true },
             );
         }
 
         if (!processRoles.length) {
-            loadingMessage.edit({ embeds: [embed.setDescription("İşlem yapacak rol bulunmuyor.")] });
+            loadingMessage.edit({ embeds: [embed.setDescription('İşlem yapacak rol bulunmuyor.')] });
             return;
         }
 
         loadingMessage.edit({
             embeds: [
-                embed.setDescription([
-                    `Bütün yetkiler ${bold(operation === 'aç' ? 'açıldı.' : 'kapatıldı.')}`,
-                    operation === "kapat" ? codeBlock('yaml', `# İşlem Yapılan Roller\n${processRoles.join('\n')}`) : undefined,
-                ].join('\n'))
-            ]
+                embed.setDescription(
+                    [
+                        `Bütün yetkiler ${bold(operation === 'aç' ? 'açıldı.' : 'kapatıldı.')}`,
+                        operation === 'kapat'
+                            ? codeBlock('yaml', `# İşlem Yapılan Roller\n${processRoles.join('\n')}`)
+                            : undefined,
+                    ].join('\n'),
+                ),
+            ],
         });
     },
 };

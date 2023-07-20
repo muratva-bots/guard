@@ -1,4 +1,4 @@
-import { LimitFlags, SafeFlags } from '@guard-bot/enums';
+import { LimitFlags, OperationFlags, SafeFlags } from '@guard-bot/enums';
 import { AuditLogEvent, Events, inlineCode } from 'discord.js';
 
 const GuildRoleDelete: Guard.IEvent = {
@@ -15,7 +15,7 @@ const GuildRoleDelete: Guard.IEvent = {
 
             const staffMember = role.guild.members.cache.get(entry.executorId);
             const safe = [
-                ...[staffMember ? (client.safes.find((_, k) => staffMember.roles.cache.get(k)) || []) : []],
+                ...[staffMember ? client.safes.find((_, k) => staffMember.roles.cache.get(k)) || [] : []],
                 ...(client.safes.get(entry.executorId) || []),
             ].flat(1);
             if (safe.includes(SafeFlags.Full)) return;
@@ -26,10 +26,7 @@ const GuildRoleDelete: Guard.IEvent = {
                 limit: guildData.settings.roleLimitCount,
                 time: guildData.settings.roleLimitTime,
                 canCheck: safe.includes(SafeFlags.Role),
-                operation: `${new Date().toLocaleDateString('tr-TR', {
-                    hour: 'numeric',
-                    minute: 'numeric',
-                })} -> Rol Silme`,
+                operation: OperationFlags.RoleDelete
             });
             if (limit && limit.isWarn) {
                 client.utils.sendLimitWarning({

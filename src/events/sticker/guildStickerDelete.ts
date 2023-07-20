@@ -1,4 +1,4 @@
-import { LimitFlags, SafeFlags } from '@guard-bot/enums';
+import { LimitFlags, OperationFlags, SafeFlags } from '@guard-bot/enums';
 import { AuditLogEvent, Events, inlineCode } from 'discord.js';
 
 const GuildStickerDelete: Guard.IEvent = {
@@ -15,7 +15,7 @@ const GuildStickerDelete: Guard.IEvent = {
 
             const staffMember = sticker.guild.members.cache.get(entry.executorId);
             const safe = [
-                ...[staffMember ? (client.safes.find((_, k) => staffMember.roles.cache.get(k)) || []) : []],
+                ...[staffMember ? client.safes.find((_, k) => staffMember.roles.cache.get(k)) || [] : []],
                 ...(client.safes.get(entry.executorId) || []),
             ].flat(1);
             if (safe.includes(SafeFlags.Full)) return;
@@ -26,10 +26,7 @@ const GuildStickerDelete: Guard.IEvent = {
                 limit: guildData.settings.stickerLimitCount,
                 time: guildData.settings.stickerLimitTime,
                 canCheck: safe.includes(SafeFlags.Sticker),
-                operation: `${new Date().toLocaleDateString('tr-TR', {
-                    hour: 'numeric',
-                    minute: 'numeric',
-                })} -> Çıkartma Silme`,
+                operation: OperationFlags.StickerDelete,
             });
             if (limit && limit.isWarn) {
                 client.utils.sendLimitWarning({
@@ -51,7 +48,7 @@ const GuildStickerDelete: Guard.IEvent = {
                 reason: 'Çıkartma silindiği için yeniden oluşturuldu!',
             });
 
-            console.log(safe)
+            console.log(safe);
             client.utils.sendPunishLog({
                 guild: sticker.guild,
                 action: safe.length ? 'silerek limite ulaştı' : 'sildi',

@@ -110,7 +110,7 @@ export class Utils {
         const previousOperations = isSafe
             ? `${codeBlock(
                   'yaml',
-                  `# Limite Yakalanmadan Önceki İşlemleri\n${operations.map((o, i) => `${i+1}. ${o}`).join('\n')}`,
+                  `# Limite Yakalanmadan Önceki İşlemleri\n${operations.map((o, i) => `${i + 1}. ${o}`).join('\n')}`,
               )}`
             : undefined;
 
@@ -141,19 +141,23 @@ export class Utils {
         if (!canCheck) return undefined;
 
         const now = Date.now().valueOf();
+        const content = `${new Date().toLocaleDateString('tr-TR', {
+            hour: 'numeric',
+            minute: 'numeric',
+        })} -> ${operation}`;
         const key = `${userId}_${type}`;
         const userLimits = this.client.limits.get(key);
         if (!userLimits) {
-            this.client.limits.set(key, { operations: [operation], lastDate: now });
+            this.client.limits.set(key, { operations: [content], lastDate: now });
             return {
                 isWarn: true,
                 maxCount: limit,
                 currentCount: 1,
-                operations: [operation],
+                operations: [content],
             };
         }
 
-        userLimits.operations.push(operation);
+        userLimits.operations.push(content);
         const diff = now - userLimits.lastDate;
         if (diff < time && userLimits.operations.length > limit) {
             return {
@@ -164,7 +168,7 @@ export class Utils {
             };
         }
 
-        if (diff > time) this.client.limits.set(key, { operations: [operation], lastDate: now });
+        if (diff > time) this.client.limits.set(key, { operations: [content], lastDate: now });
         return {
             isWarn: true,
             maxCount: limit,

@@ -116,7 +116,7 @@ const Limit: Guard.ICommand = {
         const collected = await question.awaitMessageComponent({
             filter: (i: Interaction) => i.user.id === message.author.id && i.isStringSelectMenu(),
             componentType: ComponentType.StringSelect,
-            time: 1000 * 60 * 3
+            time: 1000 * 60 * 3,
         });
         if (collected) {
             const limit = limits.find((l) => l.value === collected.values[0]);
