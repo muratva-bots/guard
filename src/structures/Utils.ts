@@ -268,6 +268,9 @@ export class Utils {
         const guild = this.client.guilds.cache.first();
         if (!guild) return;
 
+        const guildData = this.client.servers.get(guild.id);
+        if (!guildData) return;
+
         const permissions = [];
         guild.roles.cache
             .filter((role) => this.dangerPerms.some((perm) => role.permissions.has(perm)) && role.editable)
@@ -278,7 +281,8 @@ export class Utils {
                 });
                 role.setPermissions([]);
             });
-        await GuildModel.updateOne({ id: guild.id }, { $set: { permissions } }, { upsert: true });
+        guildData.settings.permissions = permissions;
+        await GuildModel.updateOne({ id: guild.id }, { $set: { "settings.guard": guildData } }, { upsert: true });
     }
 
     getRandomColor() {
