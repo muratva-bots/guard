@@ -19,7 +19,7 @@ const ChannelCreate: Guard.IEvent = {
             const safe = [
                 ...[staffMember ? (client.safes.find((_, k) => staffMember.roles.cache.get(k)) || []) : []],
                 ...(client.safes.get(entry.executorId) || []),
-            ];
+            ].flat(1);
             if (safe.includes(SafeFlags.Full)) return;
 
             const limit = client.utils.checkLimits({
