@@ -71,11 +71,13 @@ async function checkOfflineAndWeb(client: Client, guild: Guild) {
             client.staffs.delete(m.id);
         });
 
-    const staffs = Array.from(client.staffs).map((s) => ({
-        id: s[0],
-        roles: s[1],
-    }));
-    await GuildModel.updateOne({ id: guild.id }, { $set: { 'settings.guard.staffs': staffs } }, { upsert: true });
+    const oldStaffs = guildData.settings.staffs || [];
+    const staffs = Array.from(client.staffs).map((s) => ({ id: s[0], roles: s[1] }));
+    if (
+        (oldStaffs.length && !staffs.length) || 
+        (!oldStaffs.length  && staffs.length) || 
+        !oldStaffs.every((v, i) => v === staffs[i])
+    ) await GuildModel.updateOne({ id: guild.id }, { $set: { 'settings.guard.staffs': staffs } }, { upsert: true });
 }
 
 export default checkOfflineAndWeb;

@@ -46,7 +46,8 @@ export class Utils {
             { $set: { 'settings.guard.danger': status } },
             { upsert: true },
         );
-        this.client.servers.set(guildId, document.toObject());
+        this.danger = status;
+        this.client.servers.set(guildId, { settings: { ...((document.settings || {}).guard || {}) } });
     }
 
     sendLimitWarning({
