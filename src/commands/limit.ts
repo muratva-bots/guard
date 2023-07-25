@@ -1,3 +1,4 @@
+import { GuildModel } from '@/models';
 import {
     ActionRowBuilder,
     ComponentType,
@@ -150,7 +151,80 @@ const Limit: Guard.ICommand = {
                 components: [row, rowTwo],
             });
 
-            collected.showModal(modal);
+            await collected.showModal(modal);
+
+            const modalCollected = collected.awaitModalSubmit({
+                filter: (i) => i.user.id === message.author.id,
+                time: 1000 * 60 * 5
+            });
+            if (modalCollected) {
+                const time = modalCollected.fields.getTextInputValue('time');
+                if (!ms(time)) {
+                    modalCollected.reply({ content: 'Geçerli bir zaman belirt! (15m)', ephemeral: true });
+                    return;
+                }
+        
+                const count = modalCollected.fields.getTextInputValue('count');
+                if (!Number(count)) {
+                    modalCollected.reply({ content: 'Geçerli bir adet belirt! (5)', ephemeral: true });
+                    return;
+                }
+        
+                const limit = limits.find((l) => l.value === modalCollected.customId.split('-')[1]);
+                guildData.settings[limit.time] = ms(time);
+                guildData.settings[limit.count] = count;
+                await GuildModel.updateOne(
+                    { id: modalCollected.guildId },
+                    {
+                        $set: {
+                            [`settings.guard.${limit.time}`]: guildData.settings[limit.time],
+                            [`settings.guard.${limit.count}`]: guildData.settings[limit.count],
+                        },
+                    },
+                    { upsert: true },
+                );
+        
+                modalCollected.message.edit({
+                    embeds: [
+                        new EmbedBuilder({
+                            color: client.utils.getRandomColor(),
+                            author: {
+                                name: modalCollected.user.username,
+                                icon_url: modalCollected.user.displayAvatarURL({
+                                    forceStatic: true,
+                                    size: 4096,
+                                }),
+                            },
+                            description: [
+                                `Merhaba ${modalCollected.user} (${inlineCode(
+                                    modalCollected.user.id,
+                                )}) koruma botu limit menüsüne hoşgeldin,\n`,
+                                codeBlock(
+                                    'yaml',
+                                    [
+                                        `# ${modalCollected.guild.name} Sunucusunun Koruma Sistemi (Sistem Durumu: )`,
+                                        limits
+                                            .map(
+                                                (l) =>
+                                                    `→ ${l.name}: ${ms(
+                                                        guildData.settings[l.time] || client.config.DEFAULTS.LIMIT.TIME,
+                                                    )} süre içinde ${
+                                                        guildData.settings[l.count] || client.config.DEFAULTS.LIMIT.COUNT
+                                                    }`,
+                                            )
+                                            .join('\n'),
+                                    ].join('\n'),
+                                ),
+                            ].join('\n'),
+                        }),
+                    ],
+                });
+        
+                await interaction.reply({
+                    content: 'Limit ayarları başarıyla güncellendi!',
+                    ephemeral: true,
+                });
+            }
         } else question.delete();
     },
 };
