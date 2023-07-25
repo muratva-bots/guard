@@ -153,7 +153,7 @@ const Limit: Guard.ICommand = {
 
             await collected.showModal(modal);
 
-            const modalCollected = collected.awaitModalSubmit({
+            const modalCollected = await collected.awaitModalSubmit({
                 filter: (i) => i.user.id === message.author.id,
                 time: 1000 * 60 * 5
             });
