@@ -9,7 +9,7 @@ const ChannelUpdate: Guard.IEvent<Events.ChannelUpdate> = {
             if (oldChannel.isDMBased() || oldChannel.isThread()) return;
 
             const guildData = client.servers.get(oldChannel.guildId);
-            if (!guildData || !guildData.settings.channel) return;
+            if (!guildData || !guildData.channel) return;
 
             const entry = await getEntry((newChannel as GuildChannel).guild);
             if (!entry) return;
@@ -24,8 +24,8 @@ const ChannelUpdate: Guard.IEvent<Events.ChannelUpdate> = {
             const limit = client.utils.checkLimits({
                 userId: entry.executor.id,
                 type: LimitFlags.Channel,
-                limit: guildData.settings.channelLimitCount,
-                time: guildData.settings.channelLimitTime,
+                limit: guildData.channelLimitCount,
+                time: guildData.channelLimitTime,
                 canCheck: safe.includes(SafeFlags.Channel),
                 operation: OperationFlags.ChannelUpdate,
             });

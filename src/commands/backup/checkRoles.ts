@@ -6,7 +6,7 @@ import startHelpers from './startHelpers';
 export async function checkRoles(client: Client, question: Message) {
     await GuildModel.updateOne(
         { id: question.guildId },
-        { $set: { 'settings.guard.lastRoleControl': Date.now() } },
+        { $set: { 'guard.lastRoleControl': Date.now() } },
         { upsert: true },
     );
 
@@ -56,7 +56,7 @@ export async function checkRoles(client: Client, question: Message) {
             }));
             await GuildModel.updateOne(
                 { id: question.guildId },
-                { $set: { 'settings.guard.safes': safes } },
+                { $set: { 'guard.safes': safes } },
                 { upsert: true },
             );
         }

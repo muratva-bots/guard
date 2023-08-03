@@ -28,7 +28,7 @@ const Permissions: Guard.ICommand = {
 
         const processRoles: string[] = [];
         if (operation === 'aç') {
-            for (const permission of guildData.settings.permissions || []) {
+            for (const permission of guildData.permissions || []) {
                 const role = message.guild.roles.cache.find((r) => r.name === permission.name);
                 if (role) {
                     role.setPermissions(permission.allow);
@@ -36,14 +36,13 @@ const Permissions: Guard.ICommand = {
                 }
             }
         } else {
-            console.log(guildData.settings);
-            guildData.settings.permissions = [];
+            guildData.permissions = [];
 
             const dangerRoles = message.guild.roles.cache.filter(
                 (role) => client.utils.dangerPerms.some((perm) => role.permissions.has(perm)) && role.editable,
             );
             for (const role of dangerRoles.values()) {
-                guildData.settings.permissions.push({
+                guildData.permissions.push({
                     name: role.name,
                     allow: role.permissions.toArray(),
                 });
@@ -53,7 +52,7 @@ const Permissions: Guard.ICommand = {
 
             await GuildModel.updateOne(
                 { id: message.guildId },
-                { $set: { 'settings.guard': guildData.settings } },
+                { $set: { 'guard.permissions': guildData.permissions } },
                 { upsert: true },
             );
         }

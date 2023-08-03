@@ -100,9 +100,9 @@ const Limit: Guard.ICommand = {
                                     .map(
                                         (l) =>
                                             `→ ${l.name}: ${ms(
-                                                guildData.settings[l.time] || client.config.DEFAULTS.LIMIT.TIME,
+                                                guildData[l.time] || client.config.DEFAULTS.LIMIT.TIME,
                                             )} süre içinde ${
-                                                guildData.settings[l.count] || client.config.DEFAULTS.LIMIT.COUNT
+                                                guildData[l.count] || client.config.DEFAULTS.LIMIT.COUNT
                                             }`,
                                     )
                                     .join('\n'),
@@ -171,14 +171,14 @@ const Limit: Guard.ICommand = {
                 }
         
                 const limit = limits.find((l) => l.value === modalCollected.customId.split('-')[1]);
-                guildData.settings[limit.time] = ms(time);
-                guildData.settings[limit.count] = count;
+                guildData[limit.time] = ms(time);
+                guildData[limit.count] = count;
                 await GuildModel.updateOne(
                     { id: modalCollected.guildId },
                     {
                         $set: {
-                            [`settings.guard.${limit.time}`]: guildData.settings[limit.time],
-                            [`settings.guard.${limit.count}`]: guildData.settings[limit.count],
+                            [`guard.${limit.time}`]: guildData[limit.time],
+                            [`guard.${limit.count}`]: guildData[limit.count],
                         },
                     },
                     { upsert: true },
@@ -207,9 +207,9 @@ const Limit: Guard.ICommand = {
                                             .map(
                                                 (l) =>
                                                     `→ ${l.name}: ${ms(
-                                                        guildData.settings[l.time] || client.config.DEFAULTS.LIMIT.TIME,
+                                                        guildData[l.time] || client.config.DEFAULTS.LIMIT.TIME,
                                                     )} süre içinde ${
-                                                        guildData.settings[l.count] || client.config.DEFAULTS.LIMIT.COUNT
+                                                        guildData[l.count] || client.config.DEFAULTS.LIMIT.COUNT
                                                     }`,
                                             )
                                             .join('\n'),
@@ -220,7 +220,7 @@ const Limit: Guard.ICommand = {
                     ],
                 });
         
-                await interaction.reply({
+                await modalCollected.reply({
                     content: 'Limit ayarları başarıyla güncellendi!',
                     ephemeral: true,
                 });

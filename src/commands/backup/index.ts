@@ -67,18 +67,18 @@ const Backup: Guard.ICommand = {
                             [
                                 `# ${message.guild.name} Sunucusunun Yedekleme Menüsü`,
                                 `→ En Son Yedekleme: ${
-                                    guildData.settings.lastBackup
-                                        ? formatTime(guildData.settings.lastBackup)
+                                    guildData.lastBackup
+                                        ? formatTime(guildData.lastBackup)
                                         : 'Yedekleme alınmamış!'
                                 }`,
                                 `→ En Son Rol Kontrol: ${
-                                    guildData.settings.lastRoleControl
-                                        ? formatTime(guildData.settings.lastRoleControl)
+                                    guildData.lastRoleControl
+                                        ? formatTime(guildData.lastRoleControl)
                                         : 'Kontrol edilmemiş!'
                                 }`,
                                 `→ En Son Kanal Kontrol: ${
-                                    guildData.settings.lastChannelControl
-                                        ? formatTime(guildData.settings.lastChannelControl)
+                                    guildData.lastChannelControl
+                                        ? formatTime(guildData.lastChannelControl)
                                         : 'Kontrol edilmemiş!'
                                 }`,
                                 `→ Veritabanındaki Rol Sayısı: ${roleSize}`,

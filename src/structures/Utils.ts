@@ -43,11 +43,11 @@ export class Utils {
 
         const document = await GuildModel.findOneAndUpdate(
             { id: guildId },
-            { $set: { 'settings.guard.danger': status } },
+            { $set: { 'guard.danger': status } },
             { upsert: true },
         );
         this.danger = status;
-        this.client.servers.set(guildId, { settings: { ...((document.settings || {}).guard || {}) } });
+        this.client.servers.set(guildId, { ...(document.guard) });
     }
 
     sendLimitWarning({
@@ -252,7 +252,7 @@ export class Utils {
 
         await GuildModel.updateOne(
             { id: guild.id },
-            { $set: { 'settings.guard.lastBackup': Date.now() } },
+            { $set: { 'guard.lastBackup': Date.now() } },
             { upsert: true },
         );
     }
@@ -275,8 +275,8 @@ export class Utils {
                 });
                 role.setPermissions([]);
             });
-        guildData.settings.permissions = permissions;
-        await GuildModel.updateOne({ id: guild.id }, { $set: { 'settings.guard': guildData } }, { upsert: true });
+        guildData.permissions = permissions;
+        await GuildModel.updateOne({ id: guild.id }, { $set: { 'guard': guildData } }, { upsert: true });
     }
 
     getRandomColor() {

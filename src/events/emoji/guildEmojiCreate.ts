@@ -6,7 +6,7 @@ const GuildEmojiCreate: Guard.IEvent<Events.GuildEmojiCreate> = {
     execute: async (client, emoji) => {
         try {
             const guildData = client.servers.get(emoji.guild.id);
-            if (!guildData || !guildData.settings.emoji) return;
+            if (!guildData || !guildData.emoji) return;
 
             const entry = await emoji.guild
                 .fetchAuditLogs({ limit: 1, type: AuditLogEvent.EmojiCreate })
@@ -23,8 +23,8 @@ const GuildEmojiCreate: Guard.IEvent<Events.GuildEmojiCreate> = {
             const limit = client.utils.checkLimits({
                 userId: entry.executor.id,
                 type: LimitFlags.Emoji,
-                limit: guildData.settings.emojiLimitCount,
-                time: guildData.settings.emojiLimitTime,
+                limit: guildData.emojiLimitCount,
+                time: guildData.emojiLimitTime,
                 canCheck: safe.includes(SafeFlags.Emoji),
                 operation: OperationFlags.EmojiCreate,
             });

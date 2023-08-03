@@ -134,7 +134,7 @@ const Safe: Guard.ICommand = {
                     }));
                     await GuildModel.updateOne(
                         { id: message.guildId },
-                        { $set: { 'settings.guard.safes': safes } },
+                        { $set: { 'guard.safes': safes } },
                         { upsert: true },
                     );
 
@@ -186,7 +186,7 @@ const Safe: Guard.ICommand = {
             }));
             await GuildModel.updateOne(
                 { id: message.guildId },
-                { $set: { 'settings.guard.safes': safes } },
+                { $set: { 'guard.safes': safes } },
                 { upsert: true },
             );
         }

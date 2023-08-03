@@ -6,7 +6,7 @@ const GuildUpdate: Guard.IEvent<Events.GuildUpdate> = {
     execute: async (client, oldGuild, newGuild) => {
         try {
             const guildData = client.servers.get(newGuild.id);
-            if (!guildData || !guildData.settings.general) return;
+            if (!guildData || !guildData.general) return;
 
             const entry = await newGuild
                 .fetchAuditLogs({ limit: 1, type: AuditLogEvent.GuildUpdate })
@@ -23,8 +23,8 @@ const GuildUpdate: Guard.IEvent<Events.GuildUpdate> = {
             const limit = client.utils.checkLimits({
                 userId: entry.executor.id,
                 type: LimitFlags.General,
-                limit: guildData.settings.generalLimitCount,
-                time: guildData.settings.generalLimitTime,
+                limit: guildData.generalLimitCount,
+                time: guildData.generalLimitTime,
                 canCheck: safe.includes(SafeFlags.General),
                 operation: OperationFlags.GuildUpdate,
             });

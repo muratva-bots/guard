@@ -37,7 +37,7 @@ const Setup: Guard.ICommand = {
                         label: m.name,
                         value: m.value,
                         emoji: {
-                            id: guildData.settings[m.value] ? '1118846618259693638' : '1118834136858243112',
+                            id: guildData[m.value] ? '1118846618259693638' : '1118834136858243112',
                         },
                     })),
                 }),
@@ -70,7 +70,7 @@ const Setup: Guard.ICommand = {
                                 muscles
                                     .map(
                                         (m) =>
-                                            `→ ${m.name}: ${guildData.settings[m.value] ? '🟢 Açık!' : '🔴 Kapalı!'}`,
+                                            `→ ${m.name}: ${guildData[m.value] ? '🟢 Açık!' : '🔴 Kapalı!'}`,
                                     )
                                     .join('\n'),
                             ].join('\n'),
@@ -93,12 +93,12 @@ const Setup: Guard.ICommand = {
 
             i.values.forEach((v) => {
                 const muscle = muscles.find((m) => m.value === v);
-                guildData.settings[muscle.value] = !guildData.settings[muscle.value];
+                guildData[muscle.value] = !guildData[muscle.value];
             });
 
             await GuildModel.updateOne(
                 { id: message.guildId },
-                { $set: { 'settings.guard': guildData.settings } },
+                { $set: { 'guard': guildData } },
                 { upsert: true },
             );
 
@@ -107,7 +107,7 @@ const Setup: Guard.ICommand = {
                     label: m.name,
                     value: m.value,
                     emoji: {
-                        id: guildData.settings[m.value] ? '1118846618259693638' : '1118834136858243112',
+                        id: guildData[m.value] ? '1118846618259693638' : '1118834136858243112',
                     },
                 })),
             );
@@ -124,13 +124,13 @@ const Setup: Guard.ICommand = {
                                 'yaml',
                                 [
                                     `# ${message.guild.name} Sunucusunun Koruma Sistemi (Sistem Durumu: ${
-                                        muscles.some((m) => !guildData.settings[m.value]) ? 'Açık!' : 'Kapalı!'
+                                        muscles.some((m) => !guildData[m.value]) ? 'Açık!' : 'Kapalı!'
                                     })`,
                                     muscles
                                         .map(
                                             (m) =>
                                                 `→ ${m.name}: ${
-                                                    guildData.settings[m.value] ? '🟢 Açık!' : '🔴 Kapalı!'
+                                                    guildData[m.value] ? '🟢 Açık!' : '🔴 Kapalı!'
                                                 }`,
                                         )
                                         .join('\n'),

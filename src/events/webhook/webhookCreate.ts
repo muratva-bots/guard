@@ -6,7 +6,7 @@ const WebhookCreate: Guard.IEvent<Events.WebhooksUpdate> = {
     execute: async (client, channel) => {
         try {
             const guildData = client.servers.get(channel.guildId);
-            if (!guildData || !guildData.settings.channel) return;
+            if (!guildData || !guildData.channel) return;
 
             const entry = await channel.guild
                 .fetchAuditLogs({ limit: 1, type: AuditLogEvent.WebhookCreate })
@@ -23,8 +23,8 @@ const WebhookCreate: Guard.IEvent<Events.WebhooksUpdate> = {
             const limit = client.utils.checkLimits({
                 userId: entry.executor.id,
                 type: LimitFlags.General,
-                limit: guildData.settings.generalLimitCount,
-                time: guildData.settings.generalLimitTime,
+                limit: guildData.generalLimitCount,
+                time: guildData.generalLimitTime,
                 canCheck: safe.includes(SafeFlags.General),
                 operation: OperationFlags.WebhookCreate,
             });

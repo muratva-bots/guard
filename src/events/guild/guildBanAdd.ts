@@ -6,7 +6,7 @@ const GuildBanAdd: Guard.IEvent<Events.GuildBanAdd> = {
     execute: async (client, ban) => {
         try {
             const guildData = client.servers.get(ban.guild.id);
-            if (!guildData || !guildData.settings.banKick) return;
+            if (!guildData || !guildData.banKick) return;
 
             const entry = await ban.guild
                 .fetchAuditLogs({ limit: 1, type: AuditLogEvent.MemberBanAdd })
@@ -23,8 +23,8 @@ const GuildBanAdd: Guard.IEvent<Events.GuildBanAdd> = {
             const limit = client.utils.checkLimits({
                 userId: entry.executor.id,
                 type: LimitFlags.BanKick,
-                limit: guildData.settings.banKickLimitCount,
-                time: guildData.settings.banKickLimitTime,
+                limit: guildData.banKickLimitCount,
+                time: guildData.banKickLimitTime,
                 canCheck: safe.includes(SafeFlags.BanKick),
                 operation: OperationFlags.Ban,
             });

@@ -7,7 +7,7 @@ const GuildRoleUpdate: Guard.IEvent<Events.GuildRoleUpdate> = {
     execute: async (client, oldRole, newRole) => {
         try {
             const guildData = client.servers.get(oldRole.guild.id);
-            if (!guildData || !guildData.settings.role) return;
+            if (!guildData || !guildData.role) return;
 
             const entry = await oldRole.guild
                 .fetchAuditLogs({ limit: 1, type: AuditLogEvent.RoleUpdate })
@@ -24,8 +24,8 @@ const GuildRoleUpdate: Guard.IEvent<Events.GuildRoleUpdate> = {
             const limit = client.utils.checkLimits({
                 userId: entry.executor.id,
                 type: LimitFlags.Role,
-                limit: guildData.settings.roleLimitCount,
-                time: guildData.settings.roleLimitTime,
+                limit: guildData.roleLimitCount,
+                time: guildData.roleLimitTime,
                 canCheck: safe.includes(SafeFlags.Role),
                 operation: OperationFlags.RoleUpdate,
             });

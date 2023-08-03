@@ -4,7 +4,7 @@ import { EmbedBuilder, Guild, codeBlock, inlineCode } from 'discord.js';
 
 async function checkOfflineAndWeb(client: Client, guild: Guild) {
     const guildData = client.servers.get(guild.id);
-    if (!guildData || (!guildData.settings.web && !guildData.settings.offline)) return;
+    if (!guildData || (!guildData.web && !guildData.offline)) return;
 
     const embed = new EmbedBuilder({
         color: client.utils.getRandomColor(),
@@ -17,8 +17,8 @@ async function checkOfflineAndWeb(client: Client, guild: Guild) {
                 !client.staffs.has(m.id) &&
                 client.utils.dangerPerms.some((p) => m.permissions.has(p)) &&
                 guild.members.me.roles.highest.position > m.roles.highest.position &&
-                ((guildData.settings.web && m.presence?.clientStatus.web) ||
-                    (guildData.settings.offline && m.presence?.status === 'offline')) &&
+                ((guildData.web && m.presence?.clientStatus.web) ||
+                    (guildData.offline && m.presence?.status === 'offline')) &&
                 !m.user.bot,
         )
         .forEach((m) => {
@@ -61,9 +61,9 @@ async function checkOfflineAndWeb(client: Client, guild: Guild) {
                 client.staffs.has(m.id) &&
                 client.utils.dangerPerms.some((p) => m.permissions.has(p)) &&
                 guild.members.me.roles.highest.position > m.roles.highest.position &&
-                guildData.settings.offline &&
+                guildData.offline &&
                 m.presence?.status !== 'offline' &&
-                guildData.settings.web &&
+                guildData.web &&
                 !m.presence?.clientStatus.web,
         )
         .forEach((m) => {
@@ -71,13 +71,13 @@ async function checkOfflineAndWeb(client: Client, guild: Guild) {
             client.staffs.delete(m.id);
         });
 
-    const oldStaffs = guildData.settings.staffs || [];
+    const oldStaffs = guildData.staffs || [];
     const staffs = Array.from(client.staffs).map((s) => ({ id: s[0], roles: s[1] }));
     if (
         (oldStaffs.length && !staffs.length) || 
         (!oldStaffs.length  && staffs.length) || 
         !oldStaffs.every((v, i) => v === staffs[i])
-    ) await GuildModel.updateOne({ id: guild.id }, { $set: { 'settings.guard.staffs': staffs } }, { upsert: true });
+    ) await GuildModel.updateOne({ id: guild.id }, { $set: { 'guard.staffs': staffs } }, { upsert: true });
 }
 
 export default checkOfflineAndWeb;

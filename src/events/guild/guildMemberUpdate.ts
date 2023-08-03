@@ -15,7 +15,7 @@ const GuildMemberUpdate: Guard.IEvent<Events.GuildMemberUpdate> = {
             )
                 return;
             const guildData = client.servers.get(newMember.guild.id);
-            if (!guildData || !guildData.settings.banKick) return;
+            if (!guildData || !guildData.banKick) return;
 
             const entry = await newMember.guild
                 .fetchAuditLogs({ limit: 1, type: AuditLogEvent.MemberUpdate })

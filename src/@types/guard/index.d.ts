@@ -1,4 +1,4 @@
-import { ISettings } from '@/models';
+import { GuardClass } from '@/models';
 import { Client } from '@/structures';
 import { ClientEvents, Message, PermissionsString } from 'discord.js';
 
@@ -31,7 +31,7 @@ declare global {
             client: Client;
             message: Message;
             args: string[];
-            guildData: ISettings;
+            guildData: GuardClass;
         }
     }
 }

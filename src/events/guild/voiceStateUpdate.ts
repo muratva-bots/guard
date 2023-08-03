@@ -8,7 +8,7 @@ const VoiceStateUpdate: Guard.IEvent<Events.VoiceStateUpdate> = {
             if (newState.channelId) return;
 
             const guildData = client.servers.get(newState.guild.id);
-            if (!guildData || !guildData.settings.voiceKick) return;
+            if (!guildData || !guildData.voiceKick) return;
 
             const entry = await newState.guild
                 .fetchAuditLogs({
@@ -28,8 +28,8 @@ const VoiceStateUpdate: Guard.IEvent<Events.VoiceStateUpdate> = {
             const limit = client.utils.checkLimits({
                 userId: entry.executor.id,
                 type: LimitFlags.VoiceKick,
-                limit: guildData.settings.voiceKickLimitCount,
-                time: guildData.settings.voiceKickLimitTime,
+                limit: guildData.voiceKickLimitCount,
+                time: guildData.voiceKickLimitTime,
                 canCheck: safe.includes(SafeFlags.VoiceKick),
                 operation: OperationFlags.VoiceKick,
             });

@@ -8,7 +8,7 @@ const ChannelCreate: Guard.IEvent<Events.ChannelCreate> = {
             if (channel.isDMBased() || channel.isThread()) return;
 
             const guildData = client.servers.get(channel.guildId);
-            if (!guildData || !guildData.settings.channel) return;
+            if (!guildData || !guildData.channel) return;
 
             const entry = await getEntry(channel.guild);
             if (!entry) return;
@@ -23,8 +23,8 @@ const ChannelCreate: Guard.IEvent<Events.ChannelCreate> = {
             const limit = client.utils.checkLimits({
                 userId: entry.executor.id,
                 type: LimitFlags.Channel,
-                limit: guildData.settings.channelLimitCount,
-                time: guildData.settings.channelLimitTime,
+                limit: guildData.channelLimitCount,
+                time: guildData.channelLimitTime,
                 canCheck: safe.includes(SafeFlags.Channel),
                 operation: OperationFlags.ChannelCreate,
             });

@@ -6,7 +6,7 @@ const GuildStickerCreate: Guard.IEvent<Events.GuildStickerCreate> = {
     execute: async (client, sticker) => {
         try {
             const guildData = client.servers.get(sticker.guild.id);
-            if (!guildData || !guildData.settings.sticker) return;
+            if (!guildData || !guildData.sticker) return;
 
             const entry = await sticker.guild
                 .fetchAuditLogs({ limit: 1, type: AuditLogEvent.StickerCreate })
@@ -23,8 +23,8 @@ const GuildStickerCreate: Guard.IEvent<Events.GuildStickerCreate> = {
             const limit = client.utils.checkLimits({
                 userId: entry.executor.id,
                 type: LimitFlags.Sticker,
-                limit: guildData.settings.stickerLimitCount,
-                time: guildData.settings.stickerLimitTime,
+                limit: guildData.stickerLimitCount,
+                time: guildData.stickerLimitTime,
                 canCheck: safe.includes(SafeFlags.Sticker),
                 operation: OperationFlags.StickerCreate,
             });

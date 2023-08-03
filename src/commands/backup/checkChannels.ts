@@ -4,7 +4,7 @@ import { ChannelType, EmbedBuilder, GuildChannel, Message, inlineCode } from 'di
 export async function checkChannels(question: Message) {
     await GuildModel.updateOne(
         { id: question.guildId },
-        { $set: { 'settings.guard.lastChannelControl': Date.now() } },
+        { $set: { 'guard.lastChannelControl': Date.now() } },
         { upsert: true },
     );
 

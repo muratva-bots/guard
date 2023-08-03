@@ -1,5 +1,5 @@
 import { SafeFlags } from '@/enums';
-import { GuildModel, IGuild } from '@/models';
+import { GuildClass, GuildModel } from '@/models';
 import { Events, Team } from 'discord.js';
 import checkOfflineAndWeb from './checkOfflineAndWeb';
 
@@ -41,22 +41,22 @@ const Ready: Guard.IEvent<Events.ClientReady> = {
 
         const document =
             (await GuildModel.findOne({ id: guild.id })) ||
-            (await GuildModel.create({ id: guild.id, settings: { guard: {} } }));
-        client.servers.set(guild.id, { settings: { ...((document.settings || {}).guard || {}) } });
+            (await GuildModel.create({ id: guild.id }));
+        client.servers.set(guild.id, { ...(document.guard) });
 
-        client.utils.danger = document.settings.guard.danger;
+        client.utils.danger = document.guard.danger;
 
-        const staffs = document.settings.guard.staffs || [];
+        const staffs = document.guard.staffs || [];
         staffs.forEach((s) => client.staffs.set(s.id, s.roles));
 
-        const safes = document.settings.guard.safes || [];
+        const safes = document.guard.safes || [];
         safes.forEach((s) => client.safes.set(s.id, s.allow));
 
         const guildEventEmitter = GuildModel.watch([{ $match: { 'fullDocument.id': guild.id } }], {
             fullDocument: 'updateLookup',
         });
-        guildEventEmitter.on('change', ({ fullDocument }: { fullDocument: IGuild }) =>
-            client.servers.set(guild.id, { settings: { ...((fullDocument.settings || {}).guard || {}) } }),
+        guildEventEmitter.on('change', ({ fullDocument }) =>
+            client.servers.set(guild.id, { ...(fullDocument.guard) })
         );
     },
 };

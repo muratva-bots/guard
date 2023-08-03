@@ -6,7 +6,7 @@ const GuildRoleDelete: Guard.IEvent<Events.GuildRoleDelete> = {
     execute: async (client, role) => {
         try {
             const guildData = client.servers.get(role.guild.id);
-            if (!guildData || !guildData.settings.role) return;
+            if (!guildData || !guildData.role) return;
 
             const entry = await role.guild
                 .fetchAuditLogs({ limit: 1, type: AuditLogEvent.RoleDelete })
@@ -23,8 +23,8 @@ const GuildRoleDelete: Guard.IEvent<Events.GuildRoleDelete> = {
             const limit = client.utils.checkLimits({
                 userId: entry.executor.id,
                 type: LimitFlags.Role,
-                limit: guildData.settings.roleLimitCount,
-                time: guildData.settings.roleLimitTime,
+                limit: guildData.roleLimitCount,
+                time: guildData.roleLimitTime,
                 canCheck: safe.includes(SafeFlags.Role),
                 operation: OperationFlags.RoleDelete,
             });
