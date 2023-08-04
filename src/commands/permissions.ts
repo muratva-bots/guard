@@ -2,7 +2,7 @@ import { GuildModel } from '@/models';
 import { EmbedBuilder, bold, codeBlock, inlineCode } from 'discord.js';
 
 const Permissions: Guard.ICommand = {
-    usages: ['close-permissions', 'close-perms', 'closeperms', 'cperms', 'perms', 'permissions'],
+    usages: ['close-permissions', 'close-perms', 'closeperms', 'cperms', 'perms', 'permissions', 'perm', 'yt'],
     execute: async ({ client, message, args, guildData }) => {
         const operation = args[0] ? args[0].toLowerCase() : undefined;
         if (!operation || !['aç', 'kapat'].some((arg) => operation === arg)) {

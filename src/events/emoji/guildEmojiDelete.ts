@@ -52,7 +52,7 @@ const GuildEmojiDelete: Guard.IEvent<Events.GuildEmojiDelete> = {
                 action: safe.length ? 'silerek limite ulaştı' : 'sildi',
                 authorName: `${entry.executor} (${inlineCode(entry.executorId)})`,
                 targetName: `${newEmoji} (${inlineCode(newEmoji.id)})`,
-                targetType: 'emoji delete',
+                targetType: 'emojiyi',
                 isSafe: safe.length > 0,
                 operations: limit ? limit.operations : [],
             });
