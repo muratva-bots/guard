@@ -1,5 +1,5 @@
 import { SafeFlags } from '@/enums';
-import { prop, getModelForClass, modelOptions } from '@typegoose/typegoose';
+import { getModelForClass, modelOptions, prop } from '@typegoose/typegoose';
 import { PermissionsString } from 'discord.js';
 
 interface IPermission {
@@ -37,6 +37,7 @@ export class GuardClass {
     url: boolean;
     disablePerms: boolean;
     general: boolean;
+    voiceKick: boolean;
     role: boolean;
     channel: boolean;
     emoji: boolean;

@@ -1,6 +1,6 @@
-import { MentionableSelectMenuBuilder } from '@discordjs/builders';
 import { SafeFlags } from '@/enums';
 import { GuildModel } from '@/models';
+import { MentionableSelectMenuBuilder } from '@discordjs/builders';
 import {
     ActionRowBuilder,
     ComponentType,
@@ -201,8 +201,8 @@ const Safe: Guard.ICommand = {
                     : undefined;
                 if (safe) {
                     const titlesOfSafe = [...new Set(value.map((p) => titles[p].name))].join(', ');
-                    const entityType = safe instanceof Role ? 'Rol' : 'Kullanıcı';
-                    const safeName = safe instanceof Role ? safe.name : safe.username;
+                    const entityType = safe instanceof Role ? safe.id : safe.id;
+                    const safeName = safe instanceof Role ? safe.name : safe.username + safe.id;
                     safes.push(`→ ${safeName} (${entityType}): ${titlesOfSafe}`);
                 }
             });

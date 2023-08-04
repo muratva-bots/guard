@@ -42,7 +42,7 @@ const GuildMemberRemove: Guard.IEvent<Events.GuildMemberRemove> = {
                 reason: 'Koruma!',
             });
             await client.utils.closePermissions(member.guild);
-            await client.utils.setDanger(member.guild.id, true);
+           // await client.utils.setDanger(member.guild.id, true);
 
             client.utils.sendPunishLog({
                 guild: member.guild,

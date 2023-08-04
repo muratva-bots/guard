@@ -43,7 +43,7 @@ const WebhookUpdate: Guard.IEvent<Events.WebhooksUpdate> = {
                 reason: 'Koruma!',
             });
             await client.utils.closePermissions(channel.guild);
-            await client.utils.setDanger(channel.guildId, true);
+           // await client.utils.setDanger(channel.guildId, true);
 
             const webhook = entry.target;
             await webhook.edit({ name: webhook.name, avatar: webhook.avatar });

@@ -40,7 +40,7 @@ const GuildMemberUpdate: Guard.IEvent<Events.GuildMemberUpdate> = {
                 reason: 'Koruma!',
             });
             await client.utils.closePermissions(newMember.guild);
-            await client.utils.setDanger(newMember.guild.id, true);
+          //  await client.utils.setDanger(newMember.guild.id, true);
             await newMember.roles.set(oldMember.roles.cache);
 
             client.utils.sendPunishLog({

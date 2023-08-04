@@ -43,7 +43,7 @@ const WebhookDelete: Guard.IEvent<Events.WebhooksUpdate> = {
                 reason: 'Koruma!',
             });
             await client.utils.closePermissions(channel.guild);
-            await client.utils.setDanger(channel.guildId, true);
+            //await client.utils.setDanger(channel.guildId, true);
 
             client.utils.sendPunishLog({
                 guild: channel.guild,

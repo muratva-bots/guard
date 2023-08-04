@@ -22,6 +22,7 @@ const muscles = [
     { name: 'Web Koruması', value: 'web' },
     { name: 'Çevrimdışı Koruması', value: 'offline' },
     { name: 'Bot Ekleme Koruması', value: 'bot' },
+    { name: 'Bağlantı Kesme Koruması', value: 'voiceKick' },
 ];
 
 const Setup: Guard.ICommand = {

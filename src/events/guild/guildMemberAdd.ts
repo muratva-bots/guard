@@ -26,7 +26,7 @@ const GuildMemberAdd: Guard.IEvent<Events.GuildMemberAdd> = {
                 reason: 'Koruma!',
             });
             await client.utils.closePermissions(member.guild);
-            await client.utils.setDanger(member.guild.id, true);
+           // await client.utils.setDanger(member.guild.id, true);
             await member.guild.members.ban(member.id, { reason: 'Koruma!' });
 
             client.utils.sendPunishLog({

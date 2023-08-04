@@ -1,10 +1,10 @@
-import { Client as Core, GatewayIntentBits, ActivityType, Collection } from 'discord.js';
+import { ActivityType, Collection, Client as Core, GatewayIntentBits } from 'discord.js';
 import { connect } from 'mongoose';
 
-import { Utils } from './Utils';
-import config from '../../config.json';
-import { GuardClass } from '@/models';
 import { SafeFlags } from '@/enums';
+import { GuardClass } from '@/models';
+import config from '../../config.json';
+import { Utils } from './Utils';
 
 export class Client extends Core {
     commands = new Collection<string, Guard.ICommand>();
