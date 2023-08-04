@@ -13,9 +13,6 @@ import { checkRoles } from './checkRoles';
 import { checkChannels } from './checkChannels';
 import { ChannelModel, RoleModel } from '@/models';
 
-// checklerde işlem yapılan rolü veya kanalı göster question edit
-// rol backupa icon ekle
-
 const formatTime = (ms: number) =>
     new Date(ms).toLocaleDateString('tr-TR', {
         hour: 'numeric',
@@ -99,11 +96,14 @@ const Backup: Guard.ICommand = {
         });
 
         collector.on('collect', async (interaction) => {
-            interaction.deferUpdate();
-            if (interaction.customId === 'danger') await setDanger(client, question, row);
-            else if (interaction.customId === 'roles') await checkRoles(client, question);
-            else if (interaction.customId === 'channels') await checkChannels(question);
-
+            if (interaction.customId === 'danger') await setDanger(client, question, row, interaction);
+            else if (interaction.customId === 'roles') {
+                interaction.deferUpdate();
+                await checkRoles(client, question);
+            } else if (interaction.customId === 'channels') {
+                interaction.deferUpdate();
+                await checkChannels(question);
+            }
             if (interaction.customId !== 'danger') collector.stop('OP');
         });
 

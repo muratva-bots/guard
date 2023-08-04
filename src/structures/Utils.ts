@@ -1,20 +1,20 @@
 import { readdirSync } from 'fs';
 import { resolve } from 'path';
 
+import { ChannelModel, GuildModel, IChannel, IChannelOverwrite, IRole, RoleModel } from '@/models';
 import { Client } from '@/structures';
 import {
+    EmbedBuilder,
     Guild,
     NewsChannel,
     PermissionFlagsBits,
     PermissionOverwrites,
     TextChannel,
     VoiceChannel,
-    EmbedBuilder,
+    bold,
     codeBlock,
     inlineCode,
-    bold,
 } from 'discord.js';
-import { ChannelModel, GuildModel, IChannel, IChannelOverwrite, IRole, RoleModel } from '@/models';
 
 export class Utils {
     private client: Client;
@@ -41,13 +41,15 @@ export class Utils {
     async setDanger(guildId: string, status: boolean) {
         if (this.danger === status) return;
 
-        const document = await GuildModel.findOneAndUpdate(
+        this.danger = status;
+        const guildData = this.client.servers.get(guildId);
+        if (guildData) this.client.servers.set(guildId, { ...guildData, danger: status });
+
+        await GuildModel.updateOne(
             { id: guildId },
             { $set: { 'guard.danger': status } },
             { upsert: true },
         );
-        this.danger = status;
-        this.client.servers.set(guildId, { ...(document.guard) });
     }
 
     sendLimitWarning({

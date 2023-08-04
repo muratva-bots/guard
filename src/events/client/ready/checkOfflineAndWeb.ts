@@ -11,30 +11,33 @@ async function checkOfflineAndWeb(client: Client, guild: Guild) {
         timestamp: Date.now(),
     });
 
-    guild.members.cache
-        .filter(
-            (m) =>
-                !client.staffs.has(m.id) &&
-                client.utils.dangerPerms.some((p) => m.permissions.has(p)) &&
-                guild.members.me.roles.highest.position > m.roles.highest.position &&
-                ((guildData.web && m.presence?.clientStatus.web) ||
-                    (guildData.offline && m.presence?.status === 'offline')) &&
-                !m.user.bot,
+    const staffMembers = guild.members.cache
+        .filter((m) => 
+            client.utils.dangerPerms.some((p) => m.permissions.has(p)) && 
+            guild.members.me.roles.highest.position > m.roles.highest.position &&
+            !m.user.bot
         )
-        .forEach((m) => {
+
+    for (const [, member] of staffMembers) {
+        const staffData = client.staffs.get(member.id);
+        const isWeb = guildData.web && member.presence?.clientStatus.web;
+        const isOffline = guildData.offline && member.presence?.status === 'offline';
+
+        if (!staffData && (isWeb || isOffline)) {
+            console.log("aldım")
             client.staffs.set(
-                m.id,
-                m.roles.cache.map((r) => r.id),
+                member.id,
+                member.roles.cache.filter(r => !r.managed && r.id !== guild.id).map((r) => r.id),
             );
-            m.roles.set(m.roles.cache.filter((r) => r.managed));
+            member.roles.set(member.roles.cache.filter((r) => r.managed));
 
             if (guild.publicUpdatesChannel) {
                 guild.publicUpdatesChannel.send({
                     embeds: [
                         embed.setDescription(
                             [
-                                `${m} (${inlineCode(m.id)}) adlı kullanıcı ${
-                                    m.presence?.clientStatus.web
+                                `${member} (${inlineCode(member.id)}) adlı kullanıcı ${
+                                    member.presence?.clientStatus.web
                                         ? 'internet sitesinden giriş yaptığı'
                                         : 'çevrimdışı olduğu'
                                 } için yetkileri çekildi.`,
@@ -42,7 +45,7 @@ async function checkOfflineAndWeb(client: Client, guild: Guild) {
                                     'yaml',
                                     [
                                         '# Çekilen Rolleri',
-                                        m.roles.cache
+                                        member.roles.cache
                                             .filter((r) => !r.managed)
                                             .map((r) => `→ ${r.name}`)
                                             .join('\n'),
@@ -53,31 +56,21 @@ async function checkOfflineAndWeb(client: Client, guild: Guild) {
                     ],
                 });
             }
-        });
+        }
 
-    guild.members.cache
-        .filter(
-            (m) =>
-                client.staffs.has(m.id) &&
-                client.utils.dangerPerms.some((p) => m.permissions.has(p)) &&
-                guild.members.me.roles.highest.position > m.roles.highest.position &&
-                guildData.offline &&
-                m.presence?.status !== 'offline' &&
-                guildData.web &&
-                !m.presence?.clientStatus.web,
-        )
-        .forEach((m) => {
-            m.roles.set(client.staffs.get(m.id));
-            client.staffs.delete(m.id);
-        });
+        if (staffData && (!isOffline || !isWeb)) {
+            console.log("geri verdim")
+            member.roles.add(staffData);
+            client.staffs.delete(member.id);
+        }
+    }
 
     const oldStaffs = guildData.staffs || [];
     const staffs = Array.from(client.staffs).map((s) => ({ id: s[0], roles: s[1] }));
-    if (
-        (oldStaffs.length && !staffs.length) || 
-        (!oldStaffs.length  && staffs.length) || 
-        !oldStaffs.every((v, i) => v === staffs[i])
-    ) await GuildModel.updateOne({ id: guild.id }, { $set: { 'guard.staffs': staffs } }, { upsert: true });
+    if (JSON.stringify(oldStaffs) !== JSON.stringify(staffs)) {
+        console.log("eklendi")
+        await GuildModel.updateOne({ id: guild.id }, { $set: { 'guard.staffs': staffs } }, { upsert: true });
+    }
 }
 
 export default checkOfflineAndWeb;

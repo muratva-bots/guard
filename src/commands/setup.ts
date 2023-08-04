@@ -67,7 +67,7 @@ const Setup: Guard.ICommand = {
                         codeBlock(
                             'yaml',
                             [
-                                `# ${message.guild.name} Sunucusunun Koruma Sistemi (Sistem Durumu: )`,
+                                `# ${message.guild.name} Sunucusunun Koruma Sistemi (Sistem Durumu: ${muscles.every(m => !guildData[m.value]) ? "Kapalı" : "Açık"})`,
                                 muscles
                                     .map(
                                         (m) =>
