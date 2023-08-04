@@ -202,7 +202,7 @@ const Safe: Guard.ICommand = {
                 if (safe) {
                     const titlesOfSafe = [...new Set(value.map((p) => titles[p].name))].join(', ');
                     const entityType = safe instanceof Role ? safe.id : safe.id;
-                    const safeName = safe instanceof Role ? safe.name : safe.username + safe.id;
+                    const safeName = safe instanceof Role ? safe.name : safe.username;
                     safes.push(`→ ${safeName} (${entityType}): ${titlesOfSafe}`);
                 }
             });
