@@ -43,7 +43,7 @@ const Setup: Guard.ICommand = {
                         label: m.name,
                         value: m.value,
                         emoji: {
-                            id: guildData[m.value] ? '1118846618259693638' : '1118834136858243112',
+                            id: guildData[m.value] ? '1137495435657871460' : '1137495384659333271',
                         },
                     })),
                 }),
