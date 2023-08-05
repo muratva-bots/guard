@@ -1,16 +1,21 @@
-import { GuildModel } from '@/models';
+import { GuardClass, GuildModel } from '@/models';
 import {
     ActionRowBuilder,
+    ButtonBuilder,
+    ButtonStyle,
     ComponentType,
     EmbedBuilder,
+    Interaction,
+    Message,
+    RoleSelectMenuBuilder,
     StringSelectMenuBuilder,
-    StringSelectMenuInteraction,
     codeBlock,
     inlineCode,
+    roleMention,
 } from 'discord.js';
 
 const muscles = [
-    { name: 'URL Koruması (!^?)', value: 'url' },
+    { name: 'URL Koruması', value: 'url' },
     { name: 'Yetkileri Kapatma', value: 'disablePerms' },
     { name: 'Sunucu Ayar Koruması', value: 'general' },
     { name: 'Rol Koruması', value: 'role' },
@@ -45,6 +50,19 @@ const Setup: Guard.ICommand = {
             ],
         });
 
+        const rowTwo = new ActionRowBuilder<ButtonBuilder>({
+            components: [
+                new ButtonBuilder({
+                    label: 'Karantina Rolü Ayarla',
+                    custom_id: 'quarantineRole',
+                    style: ButtonStyle.Danger,
+                    emoji: {
+                        id: '1135214115804172338',
+                    },
+                }),
+            ],
+        });
+
         const embed = new EmbedBuilder({
             color: client.utils.getRandomColor(),
             author: {
@@ -57,90 +75,128 @@ const Setup: Guard.ICommand = {
         });
 
         const question = await message.channel.send({
-            embeds: [
-                embed.setDescription(
-                    [
-                        `Merhaba ${message.author} (${inlineCode(
-                            message.author.id,
-                        )}) koruma botu yönetim menüsüne hoşgeldin,\n`,
-                        `${inlineCode('𝓲')} Aşağıda bulunan menüden korumaları açabilir veya kapatabilirsin.\n`,
-                        codeBlock(
-                            'yaml',
-                            [
-                                `# ${message.guild.name} Sunucusunun Koruma Sistemi (Sistem Durumu: ${
-                                    muscles.every((m) => !guildData[m.value]) ? 'Kapalı' : 'Açık'
-                                })`,
-                                muscles
-                                    .map((m) => `→ ${m.name}: ${guildData[m.value] ? '🟢 Açık!' : '🔴 Kapalı!'}`)
-                                    .join('\n'),
-                            ].join('\n'),
-                        ),
-                    ].join('\n'),
-                ),
-            ],
-            components: [row],
+            embeds: [embed.setDescription(createContent(client.utils.vanityClient, message, guildData))],
+            components: [row, rowTwo],
         });
 
-        const filter = (i: StringSelectMenuInteraction) => i.user.id === message.author.id && i.isStringSelectMenu();
+        const filter = (i: Interaction) => i.user.id === message.author.id && (i.isStringSelectMenu() || i.isButton());
         const collector = question.createMessageComponentCollector({
             filter,
             time: 1000 * 60 * 5,
-            componentType: ComponentType.StringSelect,
         });
 
-        collector.on('collect', async (i: StringSelectMenuInteraction) => {
-            i.deferUpdate();
+        collector.on('collect', async (i: Interaction) => {
+            if (i.isButton() && i.customId === 'quarantineRole') {
+                const roleRow = new ActionRowBuilder<RoleSelectMenuBuilder>({
+                    components: [
+                        new RoleSelectMenuBuilder({
+                            custom_id: 'role',
+                            placeholder: 'Rol ara...',
+                        }),
+                    ],
+                });
 
-            i.values.forEach((v) => {
-                const muscle = muscles.find((m) => m.value === v);
-                guildData[muscle.value] = !guildData[muscle.value];
-            });
+                i.reply({
+                    content: 'Karantina rolünü seçin.',
+                    components: [roleRow],
+                    ephemeral: true,
+                });
 
-            await GuildModel.updateOne({ id: message.guildId }, { $set: { guard: guildData } }, { upsert: true });
+                const interactionMessage = await i.fetchReply();
+                const collected = await interactionMessage.awaitMessageComponent({
+                    time: 1000 * 60 * 2,
+                    componentType: ComponentType.RoleSelect,
+                });
+                if (collected) {
+                    collected.deferUpdate();
 
-            row.components[0].setOptions(
-                muscles.map((m) => ({
-                    label: m.name,
-                    value: m.value,
-                    emoji: {
-                        id: guildData[m.value] ? '1118846618259693638' : '1118834136858243112',
-                    },
-                })),
-            );
+                    const roleId = collected.values[0];
 
-            question.edit({
-                embeds: [
-                    embed.setDescription(
-                        [
-                            `Merhaba ${message.author} (${inlineCode(
-                                message.author.id,
-                            )}) koruma botu yönetim menüsüne hoşgeldin,\n`,
-                            `${inlineCode('𝓲')} Aşağıda bulunan menüden korumaları açabilir veya kapatabilirsin.\n`,
-                            codeBlock(
-                                'yaml',
-                                [
-                                    `# ${message.guild.name} Sunucusunun Koruma Sistemi (Sistem Durumu: ${
-                                        muscles.some((m) => !guildData[m.value]) ? 'Açık!' : 'Kapalı!'
-                                    })`,
-                                    muscles
-                                        .map((m) => `→ ${m.name}: ${guildData[m.value] ? '🟢 Açık!' : '🔴 Kapalı!'}`)
-                                        .join('\n'),
-                                ].join('\n'),
-                            ),
-                        ].join('\n'),
-                    ),
-                ],
-                components: [row],
-            });
+                    question.edit({
+                        embeds: [embed.setDescription(createContent(client.utils.vanityClient, message, guildData))],
+                        components: [row, rowTwo],
+                    });
+
+                    i.editReply({
+                        content: `Karantina rolü ${roleMention(roleId)} (${inlineCode(roleId)}) şeklinde ayarlandı.`,
+                        components: [],
+                    });
+
+                    guildData.quarantineRole = roleId;
+                    await GuildModel.updateOne(
+                        { id: message.guildId },
+                        { $set: { 'guard.quarantineRole': roleId } },
+                        { upsert: true },
+                    );
+                } else i.deleteReply();
+                return;
+            }
+
+            if (i.isStringSelectMenu()) {
+                i.deferUpdate();
+
+                i.values.forEach((v) => {
+                    const muscle = muscles.find((m) => m.value === v);
+                    guildData[muscle.value] = !guildData[muscle.value];
+                });
+
+                row.components[0].setOptions(
+                    muscles.map((m) => ({
+                        label: m.name,
+                        value: m.value,
+                        emoji: {
+                            id: guildData[m.value] ? '1118846618259693638' : '1118834136858243112',
+                        },
+                    })),
+                );
+
+                question.edit({
+                    embeds: [embed.setDescription(createContent(client.utils.vanityClient, message, guildData))],
+                    components: [row, rowTwo],
+                });
+
+                await GuildModel.updateOne({ id: message.guildId }, { $set: { guard: guildData } }, { upsert: true });
+            }
         });
 
-        collector.on('end', () => {
-            question.edit({
-                embeds: [embed.setDescription('Menünün süresi dolduğu için menü kapatıldı.')],
-                components: [],
-            });
+        collector.on('end', (_, reason) => {
+            if (reason === 'time') {
+                const row = new ActionRowBuilder<ButtonBuilder>({
+                    components: [
+                        new ButtonBuilder({
+                            custom_id: 'button-end',
+                            label: 'Mesajın Geçerlilik Süresi Doldu.',
+                            emoji: { name: '⏱️' },
+                            style: ButtonStyle.Danger,
+                            disabled: true,
+                        }),
+                    ],
+                });
+
+                question.edit({ components: [row] });
+            }
         });
     },
 };
 
 export default Setup;
+
+function createContent(vanityClient: boolean, message: Message, guildData: GuardClass) {
+    return [
+        `Merhaba ${message.author} (${inlineCode(message.author.id)}) koruma botu yönetim menüsüne hoşgeldin,\n`,
+        `${inlineCode('𝓲')} Aşağıda bulunan menüden korumaları açabilir veya kapatabilirsin.\n`,
+        codeBlock(
+            'yaml',
+            [
+                `# ${message.guild.name} Sunucusunun Koruma Sistemi (Sistem Durumu: ${
+                    muscles.some((m) => guildData[m.value]) ? 'Açık!' : 'Kapalı!'
+                })`,
+                muscles
+                    .filter((m) => (m.value === 'url' ? !!vanityClient : true))
+                    .map((m) => `→ ${m.name}: ${guildData[m.value] ? '🟢 Açık!' : '🔴 Kapalı!'}`)
+                    .join('\n'),
+                `→ Karantina Rolü: ${message.guild.roles.cache.get(guildData.quarantineRole)?.name || 'Ayarlanmamış.'}`,
+            ].join('\n'),
+        ),
+    ].join('\n');
+}
