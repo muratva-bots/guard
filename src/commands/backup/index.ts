@@ -102,11 +102,25 @@ const Backup: Guard.ICommand = {
                 interaction.deferUpdate();
                 await checkChannels(question);
             }
-            if (interaction.customId !== 'danger') collector.stop('OP');
+            if (interaction.customId !== 'danger') collector.stop('FINISH');
         });
 
         collector.on('end', (_, reason) => {
-            if (reason !== 'OP') question.delete();
+            if (reason === 'time') {
+                const row = new ActionRowBuilder<ButtonBuilder>({
+                    components: [
+                        new ButtonBuilder({
+                            custom_id: 'button-end',
+                            label: 'Mesajın Geçerlilik Süresi Doldu.',
+                            emoji: { name: '⏱️' },
+                            style: ButtonStyle.Danger,
+                            disabled: true,
+                        }),
+                    ],
+                });
+
+                question.edit({ components: [row] });
+            }
         });
     },
 };
