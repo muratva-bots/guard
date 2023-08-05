@@ -1,15 +1,16 @@
 import { SafeFlags } from '@/enums';
-import { GuildModel } from '@/models';
-import { MentionableSelectMenuBuilder } from '@discordjs/builders';
+import { GuildModel, ISafe } from '@/models';
+import { Client } from '@/structures';
 import {
     ActionRowBuilder,
+    ButtonBuilder,
+    ButtonStyle,
     ComponentType,
-    EmbedBuilder,
-    MentionableSelectMenuInteraction,
+    Interaction,
+    MentionableSelectMenuBuilder,
+    Message,
     Role,
     StringSelectMenuBuilder,
-    StringSelectMenuInteraction,
-    bold,
     codeBlock,
     inlineCode,
 } from 'discord.js';
@@ -47,178 +48,207 @@ const titles = {
 
 const Safe: Guard.ICommand = {
     usages: ['safe', 'güvenli'],
-    execute: async ({ client, message, args }) => {
-        if (!args[0] || !['liste', 'list', 'ekle', 'add', 'kaldır', 'remove'].some((a) => a === args[0])) {
-            message.channel.send({
-                content: `Geçerli bir argüman belirt! (${inlineCode('liste')}, ${inlineCode('ekle')} veya ${inlineCode(
-                    'kaldır',
-                )})`,
-            });
-            return;
-        }
+    execute: async ({ client, message }) => {
+        const firstSafes = Array.from(client.safes).map((s) => ({
+            id: s[0],
+            allow: s[1],
+        }));
 
-        const embed = new EmbedBuilder({
-            color: client.utils.getRandomColor(),
-            author: {
-                name: message.author.username,
-                icon_url: message.author.displayAvatarURL({
-                    forceStatic: true,
-                    size: 4096,
-                }),
-            },
+        const question = await message.channel.send({
+            content: 'Yapacağınız işlemi aşağıdan seçin.',
+            components: createComponents(message, firstSafes),
         });
 
-        if (['ekle', 'add'].some((a) => args[0] === a)) {
-            const mentionableRow = new ActionRowBuilder<MentionableSelectMenuBuilder>({
-                components: [
-                    new MentionableSelectMenuBuilder({
-                        custom_id: 'target',
-                        max_values: 25,
-                        min_values: 1,
-                        placeholder: 'Kullanıcı veya rol ara...',
-                    }),
-                ],
-            });
+        const filter = (i: Interaction) => i.user.id === message.author.id && (i.isButton() || i.isStringSelectMenu());
+        const collector = await question.createMessageComponentCollector({
+            filter,
+            time: 1000 * 60 * 5,
+        });
 
-            const question = await message.channel.send({
-                embeds: [embed.setDescription('Aşağıdaki menüden ekleyeceğiniz kullanıcıları belirtin!')],
-                components: [mentionableRow],
-            });
-
-            const collectedOne = await question.awaitMessageComponent({
-                filter: (i: MentionableSelectMenuInteraction) =>
-                    i.user.id === message.author.id && i.isMentionableSelectMenu(),
-                time: 1000 * 60 * 5,
-                componentType: ComponentType.MentionableSelect,
-            });
-            if (collectedOne) {
-                collectedOne.deferUpdate();
-
-                const titleKeys = Object.keys(titles);
-                const typeRow = new ActionRowBuilder<StringSelectMenuBuilder>({
+        collector.on('collect', async (i: Interaction) => {
+            if (i.isButton() && i.customId === 'add') {
+                const targetRow = new ActionRowBuilder<MentionableSelectMenuBuilder>({
                     components: [
-                        new StringSelectMenuBuilder({
-                            custom_id: 'type',
-                            placeholder: 'İzin seçilmemiş',
-                            max_values: titleKeys.length,
-                            options: titleKeys.map((key) => ({
-                                label: titles[key].name,
-                                value: key,
-                                description: titles[key].description,
-                            })),
+                        new MentionableSelectMenuBuilder({
+                            custom_id: 'target',
+                            max_values: 25 - client.safes.size,
+                            placeholder: 'Rol veya kullanıcı ara...',
                         }),
                     ],
                 });
 
-                await question.edit({
-                    embeds: [embed.setDescription('Aşağıdaki menüden izinleri belirtin!')],
-                    components: [typeRow],
+                i.reply({
+                    content: 'Eklenecek kullanıcı(ları) veya rol(leri) seç.',
+                    components: [targetRow],
+                    ephemeral: true,
                 });
 
-                const collectedTwo = await question.awaitMessageComponent({
-                    filter: (i: StringSelectMenuInteraction) =>
-                        i.user.id === message.author.id && i.isStringSelectMenu(),
+                const interactionMessage = await i.fetchReply();
+                const targetCollected = await interactionMessage.awaitMessageComponent({
                     time: 1000 * 60 * 5,
-                    componentType: ComponentType.StringSelect,
+                    componentType: ComponentType.MentionableSelect,
                 });
-                if (collectedTwo) {
-                    for (const value of collectedOne.values) {
-                        const safe = client.safes.get(value);
-                        if (!safe) client.safes.set(collectedOne.values[0], collectedTwo.values as SafeFlags[]);
-                        else safe.push(...(collectedTwo.values as SafeFlags[]));
-                    }
+                if (targetCollected) {
+                    targetCollected.deferUpdate();
 
-                    const safes = Array.from(client.safes).map((s) => ({
-                        id: s[0],
-                        allow: s[1],
-                    }));
-                    await GuildModel.updateOne(
-                        { id: message.guildId },
-                        { $set: { 'guard.safes': safes } },
-                        { upsert: true },
-                    );
-
-                    collectedTwo.reply({
-                        content: 'Başarıyla eklendi.',
-                        ephemeral: true,
+                    const titleKeys = Object.keys(titles);
+                    const typeRow = new ActionRowBuilder<StringSelectMenuBuilder>({
+                        components: [
+                            new StringSelectMenuBuilder({
+                                custom_id: 'type',
+                                placeholder: 'İzin seçilmemiş!',
+                                max_values: titleKeys.length,
+                                options: titleKeys.map((key) => ({
+                                    label: titles[key].name,
+                                    value: key,
+                                    description: titles[key].description,
+                                })),
+                            }),
+                        ],
                     });
-                    question.delete();
-                } else question.delete();
-            } else question.delete();
-        }
 
-        if (['kaldır', 'remove'].some((a) => args[0] === a)) {
-            const target =
-                message.guild.roles.cache.get(args[1]) ||
-                client.users.cache.get(args[1]) ||
-                message.mentions.users.first() ||
-                message.mentions.roles.first();
+                    i.editReply({
+                        content: 'Aşağıdaki menüden izinleri belirtin.',
+                        components: [typeRow],
+                    });
 
-            if (!target) {
-                message.channel.send({
-                    content: 'Geçerli bir kullanıcı veya rol belirtmedin!',
-                });
-                return;
+                    const typeCollected = await interactionMessage.awaitMessageComponent({
+                        time: 1000 * 60 * 5,
+                        componentType: ComponentType.StringSelect,
+                    });
+                    if (typeCollected) {
+                        typeCollected.deferUpdate();
+
+                        const addeds: string[] = [];
+                        for (const value of targetCollected.values) {
+                            addeds.push(
+                                message.guild.roles.cache.get(value)?.name ||
+                                    message.guild.members.cache.get(value)!.user.displayName,
+                            );
+
+                            const safe = client.safes.get(value);
+                            const flags = (
+                                typeCollected.values.includes(SafeFlags.Full) ? [SafeFlags.Full] : typeCollected.values
+                            ) as SafeFlags[];
+                            if (!safe) client.safes.set(value, flags);
+                            else {
+                                if ([...safe, ...flags].includes(SafeFlags.Full))
+                                    client.safes.set(value, [SafeFlags.Full]);
+                                else safe.push(...flags);
+                            }
+                        }
+
+                        const safes = Array.from(client.safes).map((s) => ({
+                            id: s[0],
+                            allow: s[1],
+                        }));
+
+                        question.edit({ components: createComponents(message, safes) });
+
+                        i.editReply({
+                            content: `Başarıyla ${addeds
+                                .map((d) => inlineCode(d))
+                                .join(', ')} güvenlileri listeye eklendi!`,
+                            components: [],
+                        });
+
+                        await GuildModel.updateOne(
+                            { id: message.guildId },
+                            { $set: { 'guard.safes': safes } },
+                            { upsert: true },
+                        );
+                    } else i.deleteReply();
+                } else i.deleteReply();
             }
 
-            if (!client.safes.get(target.id)) {
-                message.channel.send({
-                    content: 'Belirttiğin kişi, rol güvenli listesinde zaten bulunmuyor!',
-                });
-                return;
-            }
-
-            const targetName = bold(target instanceof Role ? target.name : target.username);
-            const targetType = target instanceof Role ? 'rol' : 'kullanıcı';
-            message.channel.send({
-                embeds: [
-                    embed.setDescription(
-                        `${targetName} (${inlineCode(target.id)}) adlı ${targetType} güvenliden çıkarıldı!`,
-                    ),
-                ],
-            });
-
-            client.safes.delete(target.id);
-
-            const safes = Array.from(client.safes).map((s) => ({
-                id: s[0],
-                allow: s[1],
-            }));
-            await GuildModel.updateOne({ id: message.guildId }, { $set: { 'guard.safes': safes } }, { upsert: true });
-        }
-
-        if (['liste', 'list'].some((a) => a === args[0])) {
-            const safes = [];
-            client.safes.forEach((value, id) => {
-                const safe = client.users.cache.has(id)
-                    ? client.users.cache.get(id)
-                    : message.guild.roles.cache.has(id)
-                    ? message.guild.roles.cache.get(id)
-                    : undefined;
-                if (safe) {
-                    const titlesOfSafe = [...new Set(value.map((p) => titles[p].name))].join(', ');
-                    const entityType = safe instanceof Role ? safe.id : safe.id;
-                    const safeName = safe instanceof Role ? safe.name : safe.username;
-                    safes.push(`→ ${safeName} (${entityType}): ${titlesOfSafe}`);
+            if (i.isStringSelectMenu() && i.customId === 'remove') {
+                const deleteds: string[] = [];
+                for (const value of i.values) {
+                    deleteds.push(
+                        message.guild.roles.cache.get(value)?.name ||
+                            message.guild.members.cache.get(value)!.user!.displayName,
+                    );
+                    client.safes.delete(value);
                 }
-            });
-            message.channel.send({
-                embeds: [
-                    embed.setDescription(
-                        [
-                            `Merhaba ${message.author} (${inlineCode(
-                                message.author.id,
-                            )}) koruma botu güvenli listesine hoşgeldin,\n`,
-                            codeBlock(
-                                'yaml',
-                                `# ${message.guild.name} Sunucusunun Güvenli Listesi\n${safes.join('\n')}`,
-                            ),
-                        ].join('\n'),
-                    ),
-                ],
-            });
-        }
+
+                const safes = Array.from(client.safes).map((s) => ({
+                    id: s[0],
+                    allow: s[1],
+                }));
+
+                question.edit({ components: createComponents(message, safes) });
+
+                i.reply({
+                    content: `Başarıyla ${deleteds
+                        .map((d) => inlineCode(d))
+                        .join(', ')} güvenlileri listeden çıkarıldı!`,
+                    ephemeral: true,
+                });
+
+                await GuildModel.updateOne(
+                    { id: message.guildId },
+                    { $set: { 'guard.safes': safes } },
+                    { upsert: true },
+                );
+            }
+        });
+
+        collector.on('end', (_, reason) => {
+            if (reason === 'time') {
+                const row = new ActionRowBuilder<ButtonBuilder>({
+                    components: [
+                        new ButtonBuilder({
+                            custom_id: 'button-end',
+                            label: 'Mesajın Geçerlilik Süresi Doldu.',
+                            emoji: { name: '⏱️' },
+                            style: ButtonStyle.Danger,
+                            disabled: true,
+                        }),
+                    ],
+                });
+
+                question.edit({ components: [row] });
+            }
+        });
     },
 };
 
 export default Safe;
+
+function createComponents(message: Message, safes: ISafe[]) {
+    const list = safes.filter((s) => message.guild.roles.cache.has(s.id) || message.guild.members.cache.has(s.id));
+    return [
+        new ActionRowBuilder<StringSelectMenuBuilder>({
+            components: [
+                new StringSelectMenuBuilder({
+                    custom_id: 'remove',
+                    disabled: !list.length,
+                    maxValues: list.length === 0 ? 1 : list.length,
+                    placeholder: 'Güvenli Liste',
+                    options: list.length
+                        ? list.map((s) => ({
+                              label:
+                                  message.guild.roles.cache.get(s.id)?.name ||
+                                  message.guild.members.cache.get(s.id)!.user!.displayName,
+                              value: s.id,
+                              description: s.allow.map((p) => titles[p].name).join(', '),
+                              emoji: {
+                                  id: '1135214115804172338',
+                              },
+                          }))
+                        : [{ label: 'a', value: 'b' }],
+                }),
+            ],
+        }),
+        new ActionRowBuilder<ButtonBuilder>({
+            components: [
+                new ButtonBuilder({
+                    custom_id: 'add',
+                    disabled: safes.length >= 25,
+                    label: 'Ekle',
+                    style: ButtonStyle.Success,
+                }),
+            ],
+        }),
+    ];
+}
