@@ -41,26 +41,26 @@ export class Utils {
     }
 
     isSnowflake(id: string): id is Snowflake {
-		return BigInt(id).toString() === id;
-	}
+        return BigInt(id).toString() === id;
+    }
 
     async getMember(guild: Guild, id: string): Promise<GuildMember> {
-		if (!id || !this.isSnowflake(id.replace(/\D/g, ""))) return;
+        if (!id || !this.isSnowflake(id.replace(/\D/g, ''))) return;
 
-		const cache = guild.members.cache.get(id.replace(/\D/g, ""));
-		if (cache) return cache;
+        const cache = guild.members.cache.get(id.replace(/\D/g, ''));
+        if (cache) return cache;
 
-		let result;
-		try {
-			result = await guild.members.fetch({
-				user: id.replace(/\D/g, ""),
-				force: true,
-			});
-		} catch (e) {
-			result = undefined;
-		}
-		return result;
-	}
+        let result;
+        try {
+            result = await guild.members.fetch({
+                user: id.replace(/\D/g, ''),
+                force: true,
+            });
+        } catch (e) {
+            result = undefined;
+        }
+        return result;
+    }
 
     async setDanger(guildId: string, status: boolean) {
         if (this.danger === status) return;
@@ -69,11 +69,17 @@ export class Utils {
         const guildData = this.client.servers.get(guildId);
         if (guildData) this.client.servers.set(guildId, { ...guildData, danger: status });
 
-        await GuildModel.updateOne(
-            { id: guildId },
-            { $set: { 'guard.danger': status } },
-            { upsert: true },
-        );
+        await GuildModel.updateOne({ id: guildId }, { $set: { 'guard.danger': status } }, { upsert: true });
+    }
+    
+    setRoles(member: GuildMember, params: string[] | string): Promise<GuildMember> {
+        if (!member.manageable) return undefined;
+
+        const roles = member.roles.cache
+            .filter((role) => role.managed)
+            .map((role) => role.id)
+            .concat(params);
+        return member.roles.set(roles);
     }
 
     sendLimitWarning({
@@ -275,11 +281,7 @@ export class Utils {
         await ChannelModel.deleteMany();
         await ChannelModel.insertMany(channels);
 
-        await GuildModel.updateOne(
-            { id: guild.id },
-            { $set: { 'guard.lastBackup': Date.now() } },
-            { upsert: true },
-        );
+        await GuildModel.updateOne({ id: guild.id }, { $set: { 'guard.lastBackup': Date.now() } }, { upsert: true });
     }
 
     async closePermissions(guild: Guild) {
@@ -301,7 +303,7 @@ export class Utils {
                 role.setPermissions([]);
             });
         guildData.permissions = permissions;
-        await GuildModel.updateOne({ id: guild.id }, { $set: { 'guard': guildData } }, { upsert: true });
+        await GuildModel.updateOne({ id: guild.id }, { $set: { guard: guildData } }, { upsert: true });
     }
 
     getRandomColor() {

@@ -1,7 +1,12 @@
 import { Client } from '@/structures';
 import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, Message } from 'discord.js';
 
-export async function setDanger(client: Client, question: Message, row: ActionRowBuilder<ButtonBuilder>, interaction: ButtonInteraction) {
+export async function setDanger(
+    client: Client,
+    question: Message,
+    row: ActionRowBuilder<ButtonBuilder>,
+    interaction: ButtonInteraction,
+) {
     await client.utils.setDanger(question.guildId, !client.utils.danger);
 
     (row.components[2] as ButtonBuilder)
@@ -11,8 +16,8 @@ export async function setDanger(client: Client, question: Message, row: ActionRo
 
     if (client.utils.danger === false) {
         interaction.reply({
-            content: "Manuel yedekleme alındı.",
-            ephemeral: true
+            content: 'Manuel yedekleme alındı.',
+            ephemeral: true,
         });
         await client.utils.getBackup(question.guild);
     } else interaction.deferUpdate();

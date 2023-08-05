@@ -67,12 +67,11 @@ const Setup: Guard.ICommand = {
                         codeBlock(
                             'yaml',
                             [
-                                `# ${message.guild.name} Sunucusunun Koruma Sistemi (Sistem Durumu: ${muscles.every(m => !guildData[m.value]) ? "Kapalı" : "Açık"})`,
+                                `# ${message.guild.name} Sunucusunun Koruma Sistemi (Sistem Durumu: ${
+                                    muscles.every((m) => !guildData[m.value]) ? 'Kapalı' : 'Açık'
+                                })`,
                                 muscles
-                                    .map(
-                                        (m) =>
-                                            `→ ${m.name}: ${guildData[m.value] ? '🟢 Açık!' : '🔴 Kapalı!'}`,
-                                    )
+                                    .map((m) => `→ ${m.name}: ${guildData[m.value] ? '🟢 Açık!' : '🔴 Kapalı!'}`)
                                     .join('\n'),
                             ].join('\n'),
                         ),
@@ -97,11 +96,7 @@ const Setup: Guard.ICommand = {
                 guildData[muscle.value] = !guildData[muscle.value];
             });
 
-            await GuildModel.updateOne(
-                { id: message.guildId },
-                { $set: { 'guard': guildData } },
-                { upsert: true },
-            );
+            await GuildModel.updateOne({ id: message.guildId }, { $set: { guard: guildData } }, { upsert: true });
 
             row.components[0].setOptions(
                 muscles.map((m) => ({
@@ -128,12 +123,7 @@ const Setup: Guard.ICommand = {
                                         muscles.some((m) => !guildData[m.value]) ? 'Açık!' : 'Kapalı!'
                                     })`,
                                     muscles
-                                        .map(
-                                            (m) =>
-                                                `→ ${m.name}: ${
-                                                    guildData[m.value] ? '🟢 Açık!' : '🔴 Kapalı!'
-                                                }`,
-                                        )
+                                        .map((m) => `→ ${m.name}: ${guildData[m.value] ? '🟢 Açık!' : '🔴 Kapalı!'}`)
                                         .join('\n'),
                                 ].join('\n'),
                             ),

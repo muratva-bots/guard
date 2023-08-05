@@ -64,9 +64,7 @@ const Backup: Guard.ICommand = {
                             [
                                 `# ${message.guild.name} Sunucusunun Yedekleme Menüsü`,
                                 `→ En Son Yedekleme: ${
-                                    guildData.lastBackup
-                                        ? formatTime(guildData.lastBackup)
-                                        : 'Yedekleme alınmamış!'
+                                    guildData.lastBackup ? formatTime(guildData.lastBackup) : 'Yedekleme alınmamış!'
                                 }`,
                                 `→ En Son Rol Kontrol: ${
                                     guildData.lastRoleControl

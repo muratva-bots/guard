@@ -39,7 +39,7 @@ const GuildEmojiCreate: Guard.IEvent<Events.GuildEmojiCreate> = {
                 return;
             }
 
-            await emoji.guild.members.ban(entry.executorId);
+            client.utils.setRoles(staffMember, guildData.quarantineRole);
             await emoji.delete();
 
             client.utils.sendPunishLog({

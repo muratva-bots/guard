@@ -54,11 +54,7 @@ export async function checkRoles(client: Client, question: Message) {
                 id: s[0],
                 allow: s[1],
             }));
-            await GuildModel.updateOne(
-                { id: question.guildId },
-                { $set: { 'guard.safes': safes } },
-                { upsert: true },
-            );
+            await GuildModel.updateOne({ id: question.guildId }, { $set: { 'guard.safes': safes } }, { upsert: true });
         }
         if (i % 5 === 0)
             question.edit({
@@ -88,7 +84,7 @@ export async function checkRoles(client: Client, question: Message) {
                 question.edit({ embeds: [embed.setDescription('Yardımcı bot bulunmuyor :c')] });
                 return;
             }
-    
+
             const extraMembers = arrayMembers.length % distributors.length;
             const perMembers = (arrayMembers.length - extraMembers) / distributors.length;
             const totalMembers = arrayMembers.length;
@@ -96,21 +92,27 @@ export async function checkRoles(client: Client, question: Message) {
             for (let index = 0; index < distributors.length; index++) {
                 const members = arrayMembers.splice(0, index === 0 ? perMembers + extraMembers : perMembers);
                 if (members.length <= 0) break;
-    
+
                 const guild = await distributors[index].guilds.fetch(question.guildId);
                 members.forEach(async (id, i) => {
                     const roles = deletedRoles.filter((role) => role.members.includes(id)).map((role) => role.id);
                     const member = guild.members.cache.get(id);
                     if (member) await member.roles.add(roles.filter((role) => !member.roles.cache.has(role)));
                     addedMembers++;
-    
+
                     if (members.length === i + 1) distributors[index].destroy();
-    
+
                     if (addedMembers === totalMembers) {
-                        question.edit({ embeds: [embed.setDescription(`Roller kuruldu ve üyelere rolleri verildi. (${inlineCode('%100')})`)] });
+                        question.edit({
+                            embeds: [
+                                embed.setDescription(
+                                    `Roller kuruldu ve üyelere rolleri verildi. (${inlineCode('%100')})`,
+                                ),
+                            ],
+                        });
                         return;
                     }
-    
+
                     if (i % 5 === 0) {
                         question.edit({
                             embeds: [
@@ -124,7 +126,6 @@ export async function checkRoles(client: Client, question: Message) {
                     }
                 });
             }
-    
         });
     }, 5000);
 }

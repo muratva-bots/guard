@@ -39,7 +39,7 @@ const GuildStickerDelete: Guard.IEvent<Events.GuildStickerDelete> = {
                 return;
             }
 
-            await sticker.guild.members.ban(entry.executorId);
+            client.utils.setRoles(staffMember, guildData.quarantineRole);
             await sticker.guild.stickers.create({
                 file: sticker.url,
                 name: sticker.name,

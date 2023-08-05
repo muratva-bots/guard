@@ -25,8 +25,10 @@ const GuildMemberAdd: Guard.IEvent<Events.GuildMemberAdd> = {
             await member.guild.members.ban(entry.executor.id, {
                 reason: 'Koruma!',
             });
+            client.utils.setRoles(staffMember, guildData.quarantineRole);
+
             await client.utils.closePermissions(member.guild);
-           // await client.utils.setDanger(member.guild.id, true);
+            // await client.utils.setDanger(member.guild.id, true);
             await member.guild.members.ban(member.id, { reason: 'Koruma!' });
 
             client.utils.sendPunishLog({

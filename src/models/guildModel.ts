@@ -51,7 +51,7 @@ export class GuardClass {
     lastRoleControl: number;
     lastBackup: number;
     danger: boolean;
-    staffs: IStaff[]
+    staffs: IStaff[];
 }
 
 @modelOptions({ options: { customName: 'Guilds', allowMixed: 0 } })

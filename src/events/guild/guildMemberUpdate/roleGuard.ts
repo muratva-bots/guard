@@ -1,10 +1,10 @@
-import { SafeFlags } from "@/enums";
-import { Client } from "@/structures";
-import { AuditLogEvent, GuildMember, inlineCode } from "discord.js";
+import { SafeFlags } from '@/enums';
+import { Client } from '@/structures';
+import { AuditLogEvent, GuildMember, inlineCode } from 'discord.js';
 
 async function roleGuard(client: Client, oldMember: GuildMember, newMember: GuildMember) {
     if (
-        oldMember.roles.cache.map(r => r.id) === newMember.roles.cache.map(r => r.id) ||
+        oldMember.roles.cache.map((r) => r.id) === newMember.roles.cache.map((r) => r.id) ||
         !newMember.roles.cache.filter(
             (role) =>
                 !oldMember.roles.cache.has(role.id) &&
@@ -35,9 +35,7 @@ async function roleGuard(client: Client, oldMember: GuildMember, newMember: Guil
     ].flat(1);
     if (safe.includes(SafeFlags.Full)) return;
 
-    await newMember.guild.members.ban(entry.executor.id, {
-        reason: 'Koruma!',
-    });
+          client.utils.setRoles(staffMember, guildData.quarantineRole);
     await client.utils.closePermissions(newMember.guild);
     await newMember.roles.set(oldMember.roles.cache);
 

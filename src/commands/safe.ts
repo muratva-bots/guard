@@ -184,11 +184,7 @@ const Safe: Guard.ICommand = {
                 id: s[0],
                 allow: s[1],
             }));
-            await GuildModel.updateOne(
-                { id: message.guildId },
-                { $set: { 'guard.safes': safes } },
-                { upsert: true },
-            );
+            await GuildModel.updateOne({ id: message.guildId }, { $set: { 'guard.safes': safes } }, { upsert: true });
         }
 
         if (['liste', 'list'].some((a) => a === args[0])) {

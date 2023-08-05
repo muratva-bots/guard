@@ -38,10 +38,8 @@ const Ready: Guard.IEvent<Events.ClientReady> = {
             1000 * 60 * 60,
         );
 
-        const document =
-            (await GuildModel.findOne({ id: guild.id })) ||
-            (await GuildModel.create({ id: guild.id }));
-        client.servers.set(guild.id, { ...(document.guard) });
+        const document = (await GuildModel.findOne({ id: guild.id })) || (await GuildModel.create({ id: guild.id }));
+        client.servers.set(guild.id, { ...document.guard });
 
         client.utils.danger = document.guard.danger;
 
@@ -54,9 +52,7 @@ const Ready: Guard.IEvent<Events.ClientReady> = {
         const guildEventEmitter = GuildModel.watch([{ $match: { 'fullDocument.id': guild.id } }], {
             fullDocument: 'updateLookup',
         });
-        guildEventEmitter.on('change', ({ fullDocument }) =>
-            client.servers.set(guild.id, { ...(fullDocument.guard) })
-        );
+        guildEventEmitter.on('change', ({ fullDocument }) => client.servers.set(guild.id, { ...fullDocument.guard }));
     },
 };
 

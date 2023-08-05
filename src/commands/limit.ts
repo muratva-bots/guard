@@ -101,9 +101,7 @@ const Limit: Guard.ICommand = {
                                         (l) =>
                                             `→ ${l.name}: ${ms(
                                                 guildData[l.time] || client.config.DEFAULTS.LIMIT.TIME,
-                                            )} süre içinde ${
-                                                guildData[l.count] || client.config.DEFAULTS.LIMIT.COUNT
-                                            }`,
+                                            )} süre içinde ${guildData[l.count] || client.config.DEFAULTS.LIMIT.COUNT}`,
                                     )
                                     .join('\n'),
                             ].join('\n'),
@@ -155,7 +153,7 @@ const Limit: Guard.ICommand = {
 
             const modalCollected = await collected.awaitModalSubmit({
                 filter: (i) => i.user.id === message.author.id,
-                time: 1000 * 60 * 5
+                time: 1000 * 60 * 5,
             });
             if (modalCollected) {
                 const time = modalCollected.fields.getTextInputValue('time');
@@ -163,13 +161,13 @@ const Limit: Guard.ICommand = {
                     modalCollected.reply({ content: 'Geçerli bir zaman belirt! (15m)', ephemeral: true });
                     return;
                 }
-        
+
                 const count = modalCollected.fields.getTextInputValue('count');
                 if (!Number(count)) {
                     modalCollected.reply({ content: 'Geçerli bir adet belirt! (5)', ephemeral: true });
                     return;
                 }
-        
+
                 const limit = limits.find((l) => l.value === modalCollected.customId.split('-')[1]);
                 guildData[limit.time] = ms(time);
                 guildData[limit.count] = count;
@@ -183,7 +181,7 @@ const Limit: Guard.ICommand = {
                     },
                     { upsert: true },
                 );
-        
+
                 modalCollected.message.edit({
                     embeds: [
                         new EmbedBuilder({
@@ -219,7 +217,7 @@ const Limit: Guard.ICommand = {
                         }),
                     ],
                 });
-        
+
                 await modalCollected.reply({
                     content: 'Limit ayarları başarıyla güncellendi!',
                     ephemeral: true,
