@@ -6,9 +6,11 @@ import { Client } from '@/structures';
 import {
     EmbedBuilder,
     Guild,
+    GuildMember,
     NewsChannel,
     PermissionFlagsBits,
     PermissionOverwrites,
+    Snowflake,
     TextChannel,
     VoiceChannel,
     bold,
@@ -37,6 +39,28 @@ export class Utils {
         this.closingPermissions = false;
         this.danger = false;
     }
+
+    isSnowflake(id: string): id is Snowflake {
+		return BigInt(id).toString() === id;
+	}
+
+    async getMember(guild: Guild, id: string): Promise<GuildMember> {
+		if (!id || !this.isSnowflake(id.replace(/\D/g, ""))) return;
+
+		const cache = guild.members.cache.get(id.replace(/\D/g, ""));
+		if (cache) return cache;
+
+		let result;
+		try {
+			result = await guild.members.fetch({
+				user: id.replace(/\D/g, ""),
+				force: true,
+			});
+		} catch (e) {
+			result = undefined;
+		}
+		return result;
+	}
 
     async setDanger(guildId: string, status: boolean) {
         if (this.danger === status) return;
@@ -249,7 +273,6 @@ export class Utils {
             });
         });
         await ChannelModel.deleteMany();
-        console.log(channels.length);
         await ChannelModel.insertMany(channels);
 
         await GuildModel.updateOne(

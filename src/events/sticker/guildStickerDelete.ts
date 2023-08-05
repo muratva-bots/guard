@@ -48,7 +48,6 @@ const GuildStickerDelete: Guard.IEvent<Events.GuildStickerDelete> = {
                 reason: 'Çıkartma silindiği için yeniden oluşturuldu!',
             });
 
-            console.log(safe);
             client.utils.sendPunishLog({
                 guild: sticker.guild,
                 action: safe.length ? 'silerek limite ulaştı' : 'sildi',

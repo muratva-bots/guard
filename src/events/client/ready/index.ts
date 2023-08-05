@@ -1,7 +1,7 @@
 import { SafeFlags } from '@/enums';
 import { GuildModel } from '@/models';
 import { Events, Team } from 'discord.js';
-import checkOfflineAndWeb from './checkOfflineAndWeb';
+import presenceGuard from './presenceGuard';
 
 const Ready: Guard.IEvent<Events.ClientReady> = {
     name: Events.ClientReady,
@@ -29,8 +29,7 @@ const Ready: Guard.IEvent<Events.ClientReady> = {
                 : client.application.owner.id;
         client.safes.set(ownerID, [SafeFlags.Full]);
 
-        checkOfflineAndWeb(client, guild);
-        setInterval(() => checkOfflineAndWeb(client, guild), 1000);
+        presenceGuard(client, guild);
 
         setInterval(
             async () => {
