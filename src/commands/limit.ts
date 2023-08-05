@@ -1,11 +1,13 @@
 import { GuildModel } from '@/models';
 import {
     ActionRowBuilder,
+    ButtonBuilder,
+    ButtonStyle,
     ComponentType,
     EmbedBuilder,
-    Interaction,
     ModalBuilder,
     StringSelectMenuBuilder,
+    StringSelectMenuInteraction,
     TextInputBuilder,
     TextInputStyle,
     codeBlock,
@@ -112,13 +114,15 @@ const Limit: Guard.ICommand = {
             components: [row],
         });
 
-        const collected = await question.awaitMessageComponent({
-            filter: (i: Interaction) => i.user.id === message.author.id && i.isStringSelectMenu(),
+        const filter = (i: StringSelectMenuInteraction) => i.user.id === message.author.id && i.isStringSelectMenu();
+        const collector = await question.createMessageComponentCollector({
+            filter,
             componentType: ComponentType.StringSelect,
             time: 1000 * 60 * 3,
         });
-        if (collected) {
-            const limit = limits.find((l) => l.value === collected.values[0]);
+
+        collector.on('collect', async (i: StringSelectMenuInteraction) => {
+            const limit = limits.find((l) => l.value === i.values[0]);
 
             const row = new ActionRowBuilder<TextInputBuilder>({
                 components: [
@@ -149,9 +153,9 @@ const Limit: Guard.ICommand = {
                 components: [row, rowTwo],
             });
 
-            await collected.showModal(modal);
+            await i.showModal(modal);
 
-            const modalCollected = await collected.awaitModalSubmit({
+            const modalCollected = await i.awaitModalSubmit({
                 filter: (i) => i.user.id === message.author.id,
                 time: 1000 * 60 * 5,
             });
@@ -223,7 +227,25 @@ const Limit: Guard.ICommand = {
                     ephemeral: true,
                 });
             }
-        } else question.delete();
+        });
+
+        collector.on('end', (_, reason) => {
+            if (reason === 'time') {
+                const row = new ActionRowBuilder<ButtonBuilder>({
+                    components: [
+                        new ButtonBuilder({
+                            custom_id: 'button-end',
+                            label: 'Mesajın Geçerlilik Süresi Doldu.',
+                            emoji: { name: '⏱️' },
+                            style: ButtonStyle.Danger,
+                            disabled: true,
+                        }),
+                    ],
+                });
+
+                question.edit({ components: [row] });
+            }
+        });
     },
 };
 
