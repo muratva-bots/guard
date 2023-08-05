@@ -33,11 +33,13 @@ export class Utils {
         PermissionFlagsBits.ManageChannels,
         PermissionFlagsBits.ManageEmojisAndStickers,
     ];
+    public vanityClient: boolean;
 
     constructor(client: Client) {
         this.client = client;
         this.closingPermissions = false;
         this.danger = false;
+        this.vanityClient = false;
     }
 
     isSnowflake(id: string): id is Snowflake {
@@ -71,7 +73,7 @@ export class Utils {
 
         await GuildModel.updateOne({ id: guildId }, { $set: { 'guard.danger': status } }, { upsert: true });
     }
-    
+
     setRoles(member: GuildMember, params: string[] | string): Promise<GuildMember> {
         if (!member.manageable) return undefined;
 

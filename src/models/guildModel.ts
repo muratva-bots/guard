@@ -7,7 +7,7 @@ interface IPermission {
     allow: PermissionsString[];
 }
 
-interface ISafe {
+export interface ISafe {
     id: string;
     allow: SafeFlags[];
 }
@@ -52,6 +52,7 @@ export class GuardClass {
     lastBackup: number;
     danger: boolean;
     staffs: IStaff[];
+    quarantineRole: string;
 }
 
 @modelOptions({ options: { customName: 'Guilds', allowMixed: 0 } })

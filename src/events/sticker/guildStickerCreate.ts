@@ -39,7 +39,7 @@ const GuildStickerCreate: Guard.IEvent<Events.GuildStickerCreate> = {
                 return;
             }
 
-            client.utils.setRoles(staffMember, guildData.quarantineRole);
+            await client.utils.setRoles(staffMember, guildData.quarantineRole);
             await sticker.delete();
 
             client.utils.sendPunishLog({

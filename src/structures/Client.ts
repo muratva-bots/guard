@@ -30,13 +30,13 @@ export class Client extends Core {
     }
 
     async connect() {
-        console.log('Loading bot commands...');
+        console.log('[MAIN-BOT]: Loading bot commands...');
         await this.utils.loadCommands();
 
-        console.log('Loading bot events...');
+        console.log('[MAIN-BOT]: Loading bot events...');
         await this.utils.loadEvents();
 
-        console.log('Connecting mongo...');
+        console.log('[MAIN-BOT]: Connecting mongo...');
         await connect(this.config.MONGO_URL);
 
         await this.login(this.config.MAIN_TOKEN);

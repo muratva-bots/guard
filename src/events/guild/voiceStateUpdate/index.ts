@@ -6,7 +6,7 @@ const VoiceStateUpdate: Guard.IEvent<Events.VoiceStateUpdate> = {
     execute: async (client, _, newState) => {
         try {
             voiceMemberKick(client, _, newState);
-        //    memberMuteUpdate(client, oldState, newState)
+            //    memberMuteUpdate(client, oldState, newState)
         } catch (error) {
             console.error('Guild Member Update Error:', error);
         }

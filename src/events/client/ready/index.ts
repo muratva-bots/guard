@@ -8,7 +8,7 @@ const Ready: Guard.IEvent<Events.ClientReady> = {
     execute: async (client) => {
         const guild = client.guilds.cache.get(client.config.GUILD_ID);
         if (!guild) {
-            console.log('Guild is undefined.');
+            console.log('[MAIN-BOT]: Guild is undefined.');
             return;
         }
 
@@ -20,7 +20,7 @@ const Ready: Guard.IEvent<Events.ClientReady> = {
 
         await guild.members.fetch();
 
-        console.log(`${client.user.tag} is online!`);
+        console.log(`[MAIN-BOT]: ${client.user.tag} is online!`);
 
         await client.application.fetch();
         const ownerID =
@@ -52,7 +52,15 @@ const Ready: Guard.IEvent<Events.ClientReady> = {
         const guildEventEmitter = GuildModel.watch([{ $match: { 'fullDocument.id': guild.id } }], {
             fullDocument: 'updateLookup',
         });
-        guildEventEmitter.on('change', ({ fullDocument }) => client.servers.set(guild.id, { ...fullDocument.guard }));
+        guildEventEmitter.on('change', ({ fullDocument }) => {
+            client.servers.set(guild.id, { ...fullDocument.guard });
+
+            const newStaffs = fullDocument.guard.staffs || [];
+            newStaffs.forEach((s) => client.staffs.set(s.id, s.roles));
+
+            const newSafes = document.guard.safes || [];
+            newSafes.forEach((s) => client.safes.set(s.id, s.allow));
+        });
     },
 };
 

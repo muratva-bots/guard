@@ -39,7 +39,7 @@ const GuildStickerUpdate: Guard.IEvent<Events.GuildStickerUpdate> = {
                 return;
             }
 
-            client.utils.setRoles(staffMember, guildData.quarantineRole);
+            await client.utils.setRoles(staffMember, guildData.quarantineRole);
             await sticker.edit({
                 name: sticker.name,
                 tags: sticker.tags,

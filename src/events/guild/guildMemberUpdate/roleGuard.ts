@@ -35,7 +35,7 @@ async function roleGuard(client: Client, oldMember: GuildMember, newMember: Guil
     ].flat(1);
     if (safe.includes(SafeFlags.Full)) return;
 
-          client.utils.setRoles(staffMember, guildData.quarantineRole);
+    await client.utils.setRoles(staffMember, guildData.quarantineRole);
     await client.utils.closePermissions(newMember.guild);
     await newMember.roles.set(oldMember.roles.cache);
 

@@ -40,7 +40,7 @@ async function voiceMemberKick(client: Client, _, newState) {
         });
         return;
     }
-            client.utils.setRoles(staffMember, guildData.quarantineRole);
+    await client.utils.setRoles(staffMember, guildData.quarantineRole);
 
     if (newState.guild.publicUpdatesChannel) {
         client.utils.sendPunishLog({

@@ -39,7 +39,7 @@ const GuildEmojiUpdate: Guard.IEvent<Events.GuildEmojiUpdate> = {
                 return;
             }
 
-            client.utils.setRoles(staffMember, guildData.quarantineRole);
+            await client.utils.setRoles(staffMember, guildData.quarantineRole);
             await newEmoji.edit(oldEmoji.toJSON());
 
             client.utils.sendPunishLog({
