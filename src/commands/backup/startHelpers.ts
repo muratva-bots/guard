@@ -19,7 +19,7 @@ function startHelpers(client: Core) {
                 helperClient.on('ready', () => {
                     const guild = helperClient.guilds.cache.first();
                     if (!guild) {
-                        console.log(`${helperClient.user.tag} is not in server!`);
+                        console.log(`[HELPER-BOT]: ${helperClient.user.tag} is not in server!`);
                         helperClient.destroy();
                         return;
                     }
@@ -29,13 +29,13 @@ function startHelpers(client: Core) {
 
                 helperClient.on('rateLimit', (rateLimitData) => {
                     console.log(
-                        `${helperClient.user.tag} rate limited caught. Retrying in ${Math.round(
+                        `[HELPER-BOT]: ${helperClient.user.tag} rate limited caught. Retrying in ${Math.round(
                             rateLimitData.timeout / 1000,
                         )} seconds.`,
                     );
                 });
 
-                helperClient.login(TOKEN).catch(() => console.log(`${TOKEN} is not online.`));
+                helperClient.login(TOKEN).catch(() => console.log(`[HELPER-BOT]: ${TOKEN} is not online.`));
             }),
         );
     }
