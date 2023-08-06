@@ -47,8 +47,8 @@ export class GuardClass {
     web: boolean;
     offline: boolean;
     bot: boolean;
-    lastChannelControl: number;
-    lastRoleControl: number;
+    lastChannelDistribution: number;
+    lastRoleDistribution: number;
     lastBackup: number;
     danger: boolean;
     staffs: IStaff[];

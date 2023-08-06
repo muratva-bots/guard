@@ -1,10 +1,9 @@
-import { Client, Intents, Permissions } from 'discord.js-selfbot-v13';
+import { Client, Permissions } from 'discord.js-selfbot-v13';
 import config from '../../config.json';
 
 export class SelfClient extends Client {
     constructor() {
         super({
-            intents: [Intents.FLAGS.GUILDS],
             presence: {
                 status: 'online',
             },

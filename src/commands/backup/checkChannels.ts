@@ -1,20 +1,30 @@
-import { ChannelModel, GuildModel, RoleModel } from '@/models';
-import { ChannelType, EmbedBuilder, GuildChannel, Message, inlineCode } from 'discord.js';
+import { ChannelClass, ChannelModel, GuildModel, RoleModel } from '@/models';
+import {
+    ChannelType,
+    EmbedBuilder,
+    GuildChannel,
+    GuildChannelCreateOptions,
+    GuildPremiumTier,
+    Message,
+    inlineCode,
+} from 'discord.js';
 
-export async function checkChannels(question: Message) {
+const MaxBitratePerTier = {
+    [GuildPremiumTier.None]: 64000,
+    [GuildPremiumTier.Tier1]: 128000,
+    [GuildPremiumTier.Tier2]: 256000,
+    [GuildPremiumTier.Tier3]: 384000,
+};
+
+export async function checkChannels(question: Message, channels: ChannelClass[]) {
     await GuildModel.updateOne(
         { id: question.guildId },
-        { $set: { 'guard.lastChannelControl': Date.now() } },
+        { $set: { 'guard.lastChannelDistribution': Date.now() } },
         { upsert: true },
     );
 
     const embed = new EmbedBuilder(question.embeds[0]);
-    const channels = await ChannelModel.find();
     const deletedChannels = channels.filter((channel) => !question.guild.channels.cache.has(channel.id));
-    if (!deletedChannels.length) {
-        question.edit({ components: [], embeds: [embed.setDescription('Silinmiş kanal bulunmuyor.')] });
-        return;
-    }
 
     question.edit({ components: [], embeds: [embed.setDescription(`Kanallar kuruluyor... (${inlineCode('0%')})`)] });
 
@@ -24,16 +34,35 @@ export async function checkChannels(question: Message) {
     ];
     for (let i = 0; i < sortedChannels.length; i++) {
         const deletedChannel = sortedChannels[i];
-        const newChannel = (await question.guild.channels.create({
+
+        const createOptions: GuildChannelCreateOptions = {
             name: deletedChannel.name,
-            nsfw: deletedChannel.nsfw,
-            parent: deletedChannel.parent,
             type: deletedChannel.type,
-            topic: deletedChannel.topic,
             position: deletedChannel.position,
-            userLimit: deletedChannel.userLimit,
-        })) as GuildChannel;
-        deletedChannel.permissionOverwrites.forEach((p) => newChannel.permissionOverwrites.create(p.id, p.permissions));
+        };
+
+        if (deletedChannel.type === ChannelType.GuildText || deletedChannel.type === ChannelType.GuildAnnouncement) {
+            createOptions.topic = deletedChannel.topic;
+            createOptions.nsfw = deletedChannel.nsfw;
+            createOptions.rateLimitPerUser = deletedChannel.rateLimitPerUser;
+            if (deletedChannel.parent) createOptions.parent = deletedChannel.parent;
+        } else if (deletedChannel.type === ChannelType.GuildVoice) {
+            let bitrate = deletedChannel.bitrate;
+            const bitrates = Object.values(MaxBitratePerTier);
+            while (bitrate > MaxBitratePerTier[question.guild.premiumTier]) {
+                bitrate = bitrates[question.guild.premiumTier];
+            }
+            createOptions.bitrate = bitrate;
+            createOptions.userLimit = deletedChannel.userLimit;
+            if (deletedChannel.parent) createOptions.parent = deletedChannel.parent;
+        }
+
+        const newChannel = (await question.guild.channels.create(createOptions)) as GuildChannel;
+        deletedChannel.permissionOverwrites
+            .filter(p => question.guild.roles.cache.has(p.id) || question.guild.members.cache.has(p.id))
+            .forEach((p) => {
+                newChannel.permissionOverwrites.create(p.id, p.permissions)
+            });
         await RoleModel.updateMany(
             { 'channelOverwrites.$.id': deletedChannel.id },
             { $set: { 'channelOverwrites.$.id': newChannel.id } },

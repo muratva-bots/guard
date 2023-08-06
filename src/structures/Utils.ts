@@ -1,7 +1,7 @@
 import { readdirSync } from 'fs';
 import { resolve } from 'path';
 
-import { ChannelModel, GuildModel, IChannel, IChannelOverwrite, IRole, RoleModel } from '@/models';
+import { ChannelModel, GuildModel, ChannelClass, IChannelOverwrite, RoleClass, RoleModel } from '@/models';
 import { Client } from '@/structures';
 import {
     EmbedBuilder,
@@ -40,6 +40,13 @@ export class Utils {
         this.closingPermissions = false;
         this.danger = false;
         this.vanityClient = false;
+    }
+
+    formatTime(ms: number) {
+        return new Date(ms).toLocaleDateString('tr-TR', {
+            hour: 'numeric',
+            minute: 'numeric',
+        });
     }
 
     isSnowflake(id: string): id is Snowflake {
@@ -136,9 +143,9 @@ export class Utils {
         const updateContent = `${authorName} adlı kullanıcı ${targetName} adlı ${targetType} ${action} ve yasaklandı.`;
         const previousOperations = isSafe
             ? `${codeBlock(
-                  'yaml',
-                  `# Limite Yakalanmadan Önceki İşlemleri\n${operations.map((o, i) => `${i + 1}. ${o}`).join('\n')}`,
-              )}`
+                'yaml',
+                `# Limite Yakalanmadan Önceki İşlemleri\n${operations.map((o, i) => `${i + 1}. ${o}`).join('\n')}`,
+            )}`
             : undefined;
 
         const description = [updateContent, previousOperations].filter(Boolean).join('\n');
@@ -225,11 +232,11 @@ export class Utils {
     async getBackup(guild: Guild) {
         guild = await guild.fetch();
 
-        const roles: IRole[] = [];
-        guild.roles.cache
+        const roles: RoleClass[] = [];
+        await Promise.all(guild.roles.cache
             .sort((a, b) => a.position - b.position)
             .filter((role) => !role.managed && role.id !== guild.id)
-            .forEach((role) => {
+            .map(async (role) => {
                 const channelOverwrites: IChannelOverwrite[] = [];
                 guild.channels.cache.forEach((channel) => {
                     if (channel.isThread() || !channel.permissionOverwrites.cache.has(role.id)) return;
@@ -241,24 +248,34 @@ export class Utils {
                     });
                 });
 
+                let iconBase64: string;
+                if (role.icon) {
+                    iconBase64 = await fetch(role.iconURL({ forceStatic: true, size: 4096 })).then((res) =>
+                        res.arrayBuffer()[0].toString('base64'),
+                    );
+                }
+
                 roles.push({
                     guild: guild.id,
                     id: role.id,
                     channelOverwrites,
-                    members: guild.members.cache.filter((m) => m.roles.cache.has(role.id)).map((member) => member.id),
+                    members: guild.members.cache
+                        .filter((m) => m.roles.cache.has(role.id))
+                        .map((member) => member.id),
                     name: role.name,
                     color: role.color,
                     position: role.position,
                     permissions: role.permissions.bitfield.toString(),
                     mentionable: role.mentionable,
                     hoist: role.hoist,
+                    iconBase64: iconBase64,
                 });
-            });
+            }));
         await RoleModel.deleteMany();
         await RoleModel.insertMany(roles);
 
-        const channels: IChannel[] = [];
-        guild.channels.cache.forEach((channel) => {
+        const channels: ChannelClass[] = [];
+        await Promise.all(guild.channels.cache.map(async (channel) => {
             if (channel.isThread()) return;
 
             channels.push({
@@ -272,18 +289,22 @@ export class Utils {
                 userLimit: channel.isVoiceBased() ? channel.userLimit : undefined,
                 nsfw: channel.isTextBased() ? channel.nsfw : undefined,
                 rateLimitPerUser: channel.isVoiceBased() ? (channel as VoiceChannel).rateLimitPerUser : undefined,
-                bitrate: channel.isVoiceBased() ? channel.bitrate : undefined,
                 permissionOverwrites: channel.permissionOverwrites.cache.map((permission) => ({
                     id: permission.id,
                     type: permission.type,
                     permissions: this.getPermissions(permission),
                 })),
             });
-        });
+        }));
         await ChannelModel.deleteMany();
         await ChannelModel.insertMany(channels);
 
         await GuildModel.updateOne({ id: guild.id }, { $set: { 'guard.lastBackup': Date.now() } }, { upsert: true });
+
+        return {
+            rolesSize: roles.length,
+            channelsSize: channels.length,
+        };
     }
 
     async closePermissions(guild: Guild) {

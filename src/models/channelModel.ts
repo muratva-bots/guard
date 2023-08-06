@@ -1,5 +1,5 @@
-import { Schema, model } from 'mongoose';
-import { OverwriteType } from 'discord.js';
+import { ChannelType, OverwriteType } from 'discord.js';
+import { getModelForClass, modelOptions, prop } from '@typegoose/typegoose';
 
 export interface IPermissionOverwrites {
     id: string;
@@ -7,34 +7,50 @@ export interface IPermissionOverwrites {
     permissions: Guard.IPermissions;
 }
 
-export interface IChannel {
-    guild: string;
-    name: string;
-    id: string;
-    type: number;
-    rateLimitPerUser: number;
-    bitrate: number;
-    parent: string;
-    topic: string;
-    position: number;
-    userLimit: number;
-    nsfw: boolean;
-    permissionOverwrites: IPermissionOverwrites[];
+@modelOptions({ options: { customName: 'Channels', allowMixed: 0 } })
+export class ChannelClass {
+    @prop({ type: () => String, required: true, unique: true })
+    public id!: string;
+
+    @prop({ type: () => String, required: true })
+    public guild!: string;
+
+    @prop({ type: () => String, required: true })
+    public name!: string;
+
+    @prop({ type: () => Number, required: true })
+    public type!: Exclude<
+        ChannelType,
+        | ChannelType.DM
+        | ChannelType.GroupDM
+        | ChannelType.PublicThread
+        | ChannelType.AnnouncementThread
+        | ChannelType.PrivateThread
+    >;
+
+    @prop({ type: () => String, default: undefined })
+    public parent?: string;
+
+    @prop({ type: () => String, default: undefined })
+    public topic?: string;
+
+    @prop({ type: () => Number, required: true })
+    public position!: number;
+
+    @prop({ type: () => Number, default: undefined })
+    public userLimit?: number;
+
+    @prop({ type: () => Boolean, default: undefined })
+    public nsfw?: boolean;
+
+    @prop({ type: () => [Object], default: [] })
+    public permissionOverwrites!: IPermissionOverwrites[];
+
+    @prop({ type: () => Number, default: undefined })
+    public rateLimitPerUser?: number;
+
+    @prop({ type: () => Number, default: undefined })
+    public bitrate?: number;
 }
 
-const channelSchema = new Schema({
-    guild: String,
-    name: String,
-    id: String,
-    type: Number,
-    parent: { type: String, default: undefined },
-    topic: { type: String, default: undefined },
-    position: { type: Number, default: undefined },
-    userLimit: { type: Number, default: undefined },
-    nsfw: { type: Boolean, default: undefined },
-    permissionOverwrites: { type: Array, default: [] },
-    rateLimitPerUser: { type: Number, default: undefined },
-    bitrate: { type: Number, default: undefined },
-});
-
-export const ChannelModel = model<IChannel>('Channel', channelSchema);
+export const ChannelModel = getModelForClass(ChannelClass);

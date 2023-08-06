@@ -13,26 +13,29 @@ import { checkRoles } from './checkRoles';
 import { checkChannels } from './checkChannels';
 import { ChannelModel, RoleModel } from '@/models';
 
-const formatTime = (ms: number) =>
-    new Date(ms).toLocaleDateString('tr-TR', {
-        hour: 'numeric',
-        minute: 'numeric',
-    });
-
 const Backup: Guard.ICommand = {
     usages: ['backup'],
     execute: async ({ client, message, guildData }) => {
+        const question = await message.channel.send({
+            content: 'Veriler yükleniyor...',
+        });
+
+        const roles = await RoleModel.find({ guild: message.guildId });
+        const channels = await ChannelModel.find({ guild: message.guildId });
+
         const row = new ActionRowBuilder<ButtonBuilder>({
             components: [
                 new ButtonBuilder({
                     custom_id: 'roles',
                     style: ButtonStyle.Primary,
-                    label: 'Rolleri Kontrol Et',
+                    disabled: roles.every((r) => message.guild.roles.cache.has(r.id)),
+                    label: 'Rolleri Dağıt',
                 }),
                 new ButtonBuilder({
                     custom_id: 'channels',
                     style: ButtonStyle.Primary,
-                    label: 'Kanalları Kontrol Et',
+                    disabled: channels.every((c) => message.guild.channels.cache.has(c.id)),
+                    label: 'Kanalları Dağıt',
                 }),
                 new ButtonBuilder({
                     custom_id: 'danger',
@@ -42,9 +45,8 @@ const Backup: Guard.ICommand = {
             ],
         });
 
-        const roleSize = await RoleModel.countDocuments({ guild: message.guildId });
-        const channelSize = await ChannelModel.countDocuments({ guild: message.guildId });
-        const question = await message.channel.send({
+        await question.edit({
+            content: '',
             embeds: [
                 new EmbedBuilder({
                     color: client.utils.getRandomColor(),
@@ -64,20 +66,22 @@ const Backup: Guard.ICommand = {
                             [
                                 `# ${message.guild.name} Sunucusunun Yedekleme Menüsü`,
                                 `→ En Son Yedekleme: ${
-                                    guildData.lastBackup ? formatTime(guildData.lastBackup) : 'Yedekleme alınmamış!'
+                                    guildData.lastBackup
+                                        ? client.utils.formatTime(guildData.lastBackup)
+                                        : 'Yedekleme alınmamış!'
                                 }`,
-                                `→ En Son Rol Kontrol: ${
-                                    guildData.lastRoleControl
-                                        ? formatTime(guildData.lastRoleControl)
-                                        : 'Kontrol edilmemiş!'
+                                `→ En Son Rol Dağıtım: ${
+                                    guildData.lastRoleDistribution
+                                        ? client.utils.formatTime(guildData.lastRoleDistribution)
+                                        : 'Dağıtım yapılmamış!'
                                 }`,
-                                `→ En Son Kanal Kontrol: ${
-                                    guildData.lastChannelControl
-                                        ? formatTime(guildData.lastChannelControl)
-                                        : 'Kontrol edilmemiş!'
+                                `→ En Son Kanal Dağıtım: ${
+                                    guildData.lastChannelDistribution
+                                        ? client.utils.formatTime(guildData.lastChannelDistribution)
+                                        : 'Dağıtım yapılmamış!'
                                 }`,
-                                `→ Veritabanındaki Rol Sayısı: ${roleSize}`,
-                                `→ Veritabanındaki Kanal Sayısı: ${channelSize}`,
+                                `→ Veritabanındaki Rol Sayısı: ${roles.length}`,
+                                `→ Veritabanındaki Kanal Sayısı: ${channels.length}`,
                                 `→ Veritabanındaki Üye Sayısı: ${message.guild.memberCount}`,
                             ].join('\n'),
                         ),
@@ -94,13 +98,14 @@ const Backup: Guard.ICommand = {
         });
 
         collector.on('collect', async (interaction) => {
-            if (interaction.customId === 'danger') await setDanger(client, question, row, interaction);
+            if (interaction.customId === 'danger')
+                await setDanger(client, message, guildData, question, row, interaction);
             else if (interaction.customId === 'roles') {
                 interaction.deferUpdate();
-                await checkRoles(client, question);
+                await checkRoles(client, question, roles);
             } else if (interaction.customId === 'channels') {
                 interaction.deferUpdate();
-                await checkChannels(question);
+                await checkChannels(question, channels);
             }
             if (interaction.customId !== 'danger') collector.stop('FINISH');
         });

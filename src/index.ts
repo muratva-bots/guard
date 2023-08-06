@@ -11,4 +11,3 @@ selfClient.start().then((value) => (client.utils.vanityClient = value));
 
 process.on('unhandledRejection', (error: Error) => console.log(`[ERROR]: ${error.name}: ${error.message}`));
 process.on('uncaughtException', (error: Error) => console.log(`[ERROR]: ${error.name}: ${error.message}`));
-

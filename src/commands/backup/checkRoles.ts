@@ -1,22 +1,17 @@
-import { ChannelModel, GuildModel, RoleModel } from '@/models';
+import { ChannelModel, GuildModel, RoleClass, RoleModel } from '@/models';
 import { Client } from '@/structures';
 import { EmbedBuilder, GuildChannel, Message, inlineCode } from 'discord.js';
 import startHelpers from './startHelpers';
 
-export async function checkRoles(client: Client, question: Message) {
+export async function checkRoles(client: Client, question: Message, roles: RoleClass[]) {
     await GuildModel.updateOne(
         { id: question.guildId },
-        { $set: { 'guard.lastRoleControl': Date.now() } },
+        { $set: { 'guard.lastRoleDistribution': Date.now() } },
         { upsert: true },
     );
 
     const embed = new EmbedBuilder(question.embeds[0]);
-    const roles = await RoleModel.find();
     const deletedRoles = roles.filter((role) => !question.guild.roles.cache.has(role.id));
-    if (!deletedRoles.length) {
-        question.edit({ components: [], embeds: [embed.setDescription('Silinmiş rol bulunmuyor.')] });
-        return;
-    }
 
     question.edit({ components: [], embeds: [embed.setDescription(`Roller oluşturuluyor... (${inlineCode('0%')})`)] });
 
@@ -30,6 +25,8 @@ export async function checkRoles(client: Client, question: Message) {
             permissions: BigInt(deletedRole.permissions),
             mentionable: deletedRole.mentionable,
         });
+
+        if (deletedRole.iconBase64) newRole.setIcon(Buffer.from(deletedRole.iconBase64, 'base64'));
 
         await RoleModel.updateOne({ id: deletedRole.id }, { id: newRole.id });
         await ChannelModel.updateMany(
