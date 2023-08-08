@@ -78,6 +78,9 @@ export class GuildClass {
 
     @prop({ type: Object, default: {} })
     public guard: GuardClass;
+
+    @prop({ type: Object, default: {} })
+    public point: object;
 }
 
 export const GuildModel = getModelForClass(GuildClass);
