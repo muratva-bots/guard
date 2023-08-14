@@ -57,10 +57,12 @@ const ChannelUpdate: Guard.IEvent<Events.ChannelUpdate> = {
                     userLimit: data.userLimit,
                 });
                 data.permissionOverwrites
-                    .filter(p => (newChannel as GuildChannel).guild.roles.cache.has(p.id) || (newChannel as GuildChannel).guild.members.cache.has(p.id))
-                    .forEach((p) =>
-                        (newChannel as GuildChannel).permissionOverwrites.create(p.id, p.permissions),
-                    );
+                    .filter(
+                        (p) =>
+                            (newChannel as GuildChannel).guild.roles.cache.has(p.id) ||
+                            (newChannel as GuildChannel).guild.members.cache.has(p.id),
+                    )
+                    .forEach((p) => (newChannel as GuildChannel).permissionOverwrites.create(p.id, p.permissions));
             }
 
             client.utils.sendPunishLog({

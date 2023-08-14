@@ -59,9 +59,9 @@ export async function checkChannels(question: Message, channels: ChannelClass[])
 
         const newChannel = (await question.guild.channels.create(createOptions)) as GuildChannel;
         deletedChannel.permissionOverwrites
-            .filter(p => question.guild.roles.cache.has(p.id) || question.guild.members.cache.has(p.id))
+            .filter((p) => question.guild.roles.cache.has(p.id) || question.guild.members.cache.has(p.id))
             .forEach((p) => {
-                newChannel.permissionOverwrites.create(p.id, p.permissions)
+                newChannel.permissionOverwrites.create(p.id, p.permissions);
             });
         await RoleModel.updateMany(
             { 'channelOverwrites.$.id': deletedChannel.id },
