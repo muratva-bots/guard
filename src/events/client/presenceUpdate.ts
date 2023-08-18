@@ -1,5 +1,6 @@
 import { GuildModel } from '@/models';
-import { EmbedBuilder, Events, codeBlock, inlineCode } from 'discord.js';
+import { SafeFlags } from '@/enums';
+import { EmbedBuilder, Events, TextChannel, codeBlock, inlineCode } from 'discord.js';
 
 const PresenceUpdate: Guard.IEvent<Events.PresenceUpdate> = {
     name: Events.PresenceUpdate,
@@ -18,6 +19,13 @@ const PresenceUpdate: Guard.IEvent<Events.PresenceUpdate> = {
 
         const guildData = client.servers.get(guild.id);
         if (!guildData || (!guildData.web && !guildData.offline)) return;
+        
+        const staffMember = newPresence.guild.members.cache.get(newPresence.member.id);
+        const safe = [
+            ...[staffMember ? client.safes.find((_, k) => staffMember.roles.cache.get(k)) || [] : []],
+            ...(client.safes.get(newPresence.member.id) || []),
+        ].flat(1);
+        if (safe.includes(SafeFlags.Full)) return;
 
         const member = newPresence.member;
         const staffData = client.staffs.get(member.id);
@@ -29,14 +37,13 @@ const PresenceUpdate: Guard.IEvent<Events.PresenceUpdate> = {
             (isWeb || isOffline) &&
             client.utils.dangerPerms.some((perm) => newPresence.member.permissions.has(perm))
         ) {
-            client.staffs.set(
-                member.id,
-                member.roles.cache.filter((r) => !r.managed && r.id !== guild.id).map((r) => r.id),
-            );
-            member.roles.set(member.roles.cache.filter((r) => r.managed));
+            const dangerRoleIds = member.roles.cache.filter((r) => !r.managed && r.permissions.any(client.utils.dangerPerms)).map((r) => r.id);
+            client.staffs.set(member.id, dangerRoleIds);
+            member.roles.remove(dangerRoleIds);
+            const channel = guild.channels.cache.find((c) => c.name === 'guard-log') as TextChannel;
 
-            if (guild.publicUpdatesChannel) {
-                guild.publicUpdatesChannel.send({
+            if (channel) {
+                channel.send({
                     embeds: [
                         new EmbedBuilder({
                             color: client.utils.getRandomColor(),
@@ -51,8 +58,7 @@ const PresenceUpdate: Guard.IEvent<Events.PresenceUpdate> = {
                                     'yaml',
                                     [
                                         '# Çekilen Rolleri',
-                                        member.roles.cache
-                                            .filter((r) => !r.managed && r.id !== guild.id)
+                                        member.roles.cache.filter((r) => !r.managed && r.permissions.any(client.utils.dangerPerms))
                                             .map((r) => `→ ${r.name}`)
                                             .join('\n'),
                                     ].join('\n'),
@@ -65,7 +71,7 @@ const PresenceUpdate: Guard.IEvent<Events.PresenceUpdate> = {
         }
 
         if (staffData && (!isOffline || !isWeb)) {
-            member.roles.set([...member.roles.cache.filter((r) => r.managed).map((r) => r.id), ...staffData]);
+            member.roles.add([...member.roles.cache.filter((r) => r.managed && !r.permissions.any(client.utils.dangerPerms)).map((r) => r.id), ...staffData]);
             client.staffs.delete(member.id);
         }
 

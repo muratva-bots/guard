@@ -1,6 +1,6 @@
 import { LimitFlags, OperationFlags, SafeFlags } from '@/enums';
 import { Client } from '@/structures';
-import { AuditLogEvent, inlineCode } from 'discord.js';
+import { AuditLogEvent, TextChannel, inlineCode } from 'discord.js';
 
 async function voiceMemberKick(client: Client, _, newState) {
     const guildData = client.servers.get(newState.guild.id);
@@ -41,8 +41,9 @@ async function voiceMemberKick(client: Client, _, newState) {
         return;
     }
     await client.utils.setRoles(staffMember, guildData.quarantineRole);
+    const channel = newState.guild.channels.cache.find((c) => c.name === 'guard-log') as TextChannel;
 
-    if (newState.guild.publicUpdatesChannel) {
+    if (channel) {
         client.utils.sendPunishLog({
             guild: newState.guild,
             action: safe.length ? 'keserek limite ulaştı' : 'kesti',

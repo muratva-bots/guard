@@ -18,7 +18,7 @@ const MessageCreate: Guard.IEvent<Events.MessageCreate> = {
         // if (message.author.id !== ownerID) return;
 
         // const safe = client.safes.get(message.author.id);
-        // if (!safe || !safe.includes(SafeFlags.Full)) return;
+        if (!client.config.BOT_OWNERS.includes(message.author.id)) return;
 
         const [commandName, ...args] = message.content.slice(client.config.PREFIX.length).trim().split(' ');
         const command = client.commands.find((command) => command.usages.includes(commandName.toLowerCase()));

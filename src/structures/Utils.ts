@@ -104,7 +104,8 @@ export class Utils {
         currentCount: number;
         type: string;
     }) {
-        if (!guild.publicUpdatesChannel) return;
+        const channel = guild.channels.cache.find((c) => c.name === 'guard-log') as TextChannel;
+        if (channel) {
 
         const remainingCount = maxCount - currentCount;
         const content = `${authorName}, ${bold(type)} limitinde ${inlineCode(
@@ -116,7 +117,8 @@ export class Utils {
         const embed = new EmbedBuilder({ color: this.client.utils.getRandomColor() });
         embed.setDescription(content);
 
-        guild.publicUpdatesChannel.send({ embeds: [embed] });
+        channel.send({ embeds: [embed] });
+        }
     }
 
     sendPunishLog({
@@ -136,7 +138,9 @@ export class Utils {
         isSafe: boolean;
         operations: string[];
     }) {
-        if (!guild.publicUpdatesChannel) return;
+        const channel = guild.channels.cache.find((c) => c.name === 'guard-log') as TextChannel;
+
+        if (channel) {
 
         const embed = new EmbedBuilder({ color: this.client.utils.getRandomColor() });
 
@@ -151,10 +155,11 @@ export class Utils {
         const description = [updateContent, previousOperations].filter(Boolean).join('\n');
         embed.setDescription(description);
 
-        guild.publicUpdatesChannel.send({
-            content: '@everyone',
+        channel.send({
+            content: '@here',
             embeds: [embed],
         });
+    }
     }
 
     checkLimits({

@@ -1,16 +1,14 @@
 import { GuildModel } from '@/models';
 import { Client } from '@/structures';
-import { EmbedBuilder, Guild, codeBlock, inlineCode } from 'discord.js';
+import { EmbedBuilder, Guild, TextChannel, codeBlock, inlineCode } from 'discord.js';
 
 async function presenceGuard(client: Client, guild: Guild) {
     const guildData = client.servers.get(guild.id);
     if (!guildData || (!guildData.web && !guildData.offline)) return;
-
     const embed = new EmbedBuilder({
         color: client.utils.getRandomColor(),
         timestamp: Date.now(),
     });
-
     let firstCheck: boolean = false;
     const offlineOrWebStaffs = [...guild.members.cache.values()].filter(
         (m) =>
@@ -23,16 +21,15 @@ async function presenceGuard(client: Client, guild: Guild) {
     );
 
     offlineOrWebStaffs.forEach((m, i) => {
-        client.staffs.set(
-            m.id,
-            m.roles.cache.filter((r) => !r.managed && r.id !== guild.id).map((r) => r.id),
-        );
-        m.roles.set(m.roles.cache.filter((r) => r.managed));
+        const dangerRoleIds = m.roles.cache.filter((r) => !r.managed && r.permissions.any(client.utils.dangerPerms)).map((r) => r.id);
+        client.staffs.set(m.id, dangerRoleIds);
+        m.roles.remove(dangerRoleIds);
 
         if (i + 1 === offlineOrWebStaffs.length) firstCheck = true;
+        const channel = guild.channels.cache.find((c) => c.name === 'guard-log') as TextChannel;
 
-        if (guild.publicUpdatesChannel) {
-            guild.publicUpdatesChannel.send({
+        if (channel) {
+            channel.send({
                 embeds: [
                     embed.setDescription(
                         [
@@ -43,8 +40,7 @@ async function presenceGuard(client: Client, guild: Guild) {
                                 'yaml',
                                 [
                                     '# Çekilen Rolleri',
-                                    m.roles.cache
-                                        .filter((r) => !r.managed && r.id !== guild.id)
+                                    m.roles.cache.filter((r) => !r.managed && r.permissions.any(client.utils.dangerPerms))
                                         .map((r) => `→ ${r.name}`)
                                         .join('\n'),
                                 ].join('\n'),
