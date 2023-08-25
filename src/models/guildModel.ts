@@ -76,7 +76,21 @@ export class GuildClass {
     })
     public moderation: object;
 
-    @prop({ type: Object, default: {} })
+    @prop({ type: Object, default: {
+        url: true,
+        disablePerms: true,
+        general: true,
+        voiceKick: true,
+        role: true,
+        channel: true,
+        emoji: true,
+        sticker: true,
+        banKick: true,
+        webhook: true,
+        web: true,
+        offline: true,
+        bot: true
+    } })
     public guard: GuardClass;
 
     @prop({ type: Object, default: {} })

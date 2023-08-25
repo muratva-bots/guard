@@ -12,6 +12,7 @@ export class Client extends Core {
     servers = new Collection<string, GuardClass>();
     staffs = new Collection<string, string[]>();
     limits = new Collection<string, Guard.ILimit>();
+    perms = new Collection<string, string[]>()
     guildSettings = {
         name: '',
         banner: '',

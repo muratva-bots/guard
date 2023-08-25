@@ -23,7 +23,7 @@ export class SelfClient extends Client {
                             return;
                         }
 
-                        if (guild.members.me.permissions.has(Permissions.FLAGS.MANAGE_GUILD)) {
+                        if (!guild.members.me.permissions.has(Permissions.FLAGS.MANAGE_GUILD)) {
                             console.log('[SELF-BOT]: No permission.');
                             this.destroy();
                             resolve(false);

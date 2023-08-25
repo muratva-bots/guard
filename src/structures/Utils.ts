@@ -156,7 +156,6 @@ export class Utils {
         embed.setDescription(description);
 
         channel.send({
-            content: '@here',
             embeds: [embed],
         });
     }
@@ -324,18 +323,27 @@ export class Utils {
         const guildData = this.client.servers.get(guild.id);
         if (!guildData || !guildData.disablePerms) return;
 
-        const permissions = [];
-        guild.roles.cache
-            .filter((role) => this.dangerPerms.some((perm) => role.permissions.has(perm)) && role.editable)
-            .forEach((role) => {
-                permissions.push({
-                    role: role.id,
-                    allow: role.permissions.toArray(),
-                });
-                role.setPermissions([]);
+
+        guildData.permissions = [];
+
+        const dangerRoles = guild.roles.cache.filter(
+            (role) => this.client.utils.dangerPerms.some((perm) => role.permissions.has(perm)) && role.editable,
+        );
+        for (const role of dangerRoles.values()) {
+            guildData.permissions.push({
+                name: role.name,
+                allow: role.permissions.toArray(),
             });
-        guildData.permissions = permissions;
-        await GuildModel.updateOne({ id: guild.id }, { $set: { guard: guildData } }, { upsert: true });
+            await role.setPermissions([]);
+            this.client.perms.set(role.name, [`→ ${role.name} - ${role.id}`]);
+
+        }
+
+        await GuildModel.updateOne(
+            { id: guild.id },
+            { $set: { 'guard.permissions': guildData.permissions } },
+            { upsert: true },
+        );
     }
 
     getRandomColor() {

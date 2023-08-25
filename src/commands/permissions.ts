@@ -26,13 +26,13 @@ const Permissions: Guard.ICommand = {
             embeds: [embed.setDescription('İşlem yapılıyor...')],
         });
 
-        const processRoles: string[] = [];
+        
         if (operation === 'aç') {
             for (const permission of guildData.permissions || []) {
                 const role = message.guild.roles.cache.find((r) => r.name === permission.name);
                 if (role) {
                     role.setPermissions(permission.allow);
-                    processRoles.push(`→ ${role.name}`);
+                   client.perms.set(role.name, [`→ ${role.name} - ${role.id}`]);
                 }
             }
         } else {
@@ -47,7 +47,7 @@ const Permissions: Guard.ICommand = {
                     allow: role.permissions.toArray(),
                 });
                 await role.setPermissions([]);
-                processRoles.push(`→ ${role.name}`);
+                client.perms.set(role.name, [`→ ${role.name} - ${role.id}`]);
             }
 
             await GuildModel.updateOne(
@@ -57,7 +57,7 @@ const Permissions: Guard.ICommand = {
             );
         }
 
-        if (!processRoles.length) {
+        if (!client.perms.size) {
             loadingMessage.edit({ embeds: [embed.setDescription('İşlem yapacak rol bulunmuyor.')] });
             return;
         }
@@ -68,7 +68,7 @@ const Permissions: Guard.ICommand = {
                     [
                         `Bütün yetkiler ${bold(operation === 'aç' ? 'açıldı.' : 'kapatıldı.')}`,
                         operation === 'kapat'
-                            ? codeBlock('yaml', `# İşlem Yapılan Roller\n${processRoles.join('\n')}`)
+                            ? codeBlock('yaml', `# İşlem Yapılan Roller\n${client.perms.map(x => x).join('\n')}`)
                             : undefined,
                     ].join('\n'),
                 ),
