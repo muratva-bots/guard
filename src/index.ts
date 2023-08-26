@@ -9,5 +9,10 @@ client.connect();
 const selfClient = new SelfClient();
 selfClient.start().then((value) => (client.utils.vanityClient = value));
 
+
+process.on("uncaughtException", (err) => {
+	const errorMsg = err.stack.replace(new RegExp(`${__dirname}/`, "g"), "./");
+	console.error("[ERROR]:", errorMsg);
+});
+
 process.on('unhandledRejection', (error: Error) => console.log(`[ERROR]: ${error.name}: ${error.message}`));
-process.on('uncaughtException', (error: Error) => console.log(`[ERROR]: ${error.name}: ${error.message}`));
