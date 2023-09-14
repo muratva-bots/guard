@@ -23,9 +23,10 @@ const Ready: Guard.IEvent<Events.ClientReady> = {
         console.log(`[MAIN-BOT]: ${client.user.tag} is online!`);
 
         await client.application.fetch();
-        const ownerID =
-            client.config.BOT_OWNERS
-        client.safes.set(ownerID, [SafeFlags.Full]);
+        
+        for(const ownerID of client.config.BOT_OWNERS) {
+            client.safes.set(ownerID, [SafeFlags.Full]);
+        }
 
         presenceGuard(client, guild);
 
