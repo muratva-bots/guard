@@ -33,7 +33,7 @@ async function presenceGuard(client: Client, oldMember: GuildMember, newMember: 
         const dangerRoleIds = newMember.roles.cache.filter((r) => !r.managed && r.permissions.any(client.utils.dangerPerms)).map((r) => r.id);
         client.staffs.set(newMember.id, dangerRoleIds);
         newMember.roles.remove(dangerRoleIds);
-        const channel = newMember.guild.channels.cache.find((c) => c.name === 'guard-log') as TextChannel;
+        const channel = newMember.guild.channels.cache.find((c) => c.name === 'guard-yt') as TextChannel;
 
         if (channel) {
             channel.send({

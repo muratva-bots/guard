@@ -26,7 +26,7 @@ async function presenceGuard(client: Client, guild: Guild) {
         m.roles.remove(dangerRoleIds);
 
         if (i + 1 === offlineOrWebStaffs.length) firstCheck = true;
-        const channel = guild.channels.cache.find((c) => c.name === 'guard-log') as TextChannel;
+        const channel = guild.channels.cache.find((c) => c.name === 'guard-yt') as TextChannel;
 
         if (channel) {
             channel.send({

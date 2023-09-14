@@ -40,7 +40,7 @@ const PresenceUpdate: Guard.IEvent<Events.PresenceUpdate> = {
             const dangerRoleIds = member.roles.cache.filter((r) => !r.managed && r.permissions.any(client.utils.dangerPerms)).map((r) => r.id);
             client.staffs.set(member.id, dangerRoleIds);
             member.roles.remove(dangerRoleIds);
-            const channel = guild.channels.cache.find((c) => c.name === 'guard-log') as TextChannel;
+            const channel = guild.channels.cache.find((c) => c.name === 'guard-yt') as TextChannel;
 
             if (channel) {
                 channel.send({

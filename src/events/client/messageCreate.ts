@@ -11,13 +11,6 @@ const MessageCreate: Guard.IEvent<Events.MessageCreate> = {
         )
             return;
 
-        // const ownerID =
-        //     client.application.owner instanceof Team
-        //         ? (client.application.owner as Team).ownerId
-        //         : client.application.owner.id;
-        // if (message.author.id !== ownerID) return;
-
-        // const safe = client.safes.get(message.author.id);
         if (!client.config.BOT_OWNERS.includes(message.author.id)) return;
 
         const [commandName, ...args] = message.content.slice(client.config.PREFIX.length).trim().split(' ');

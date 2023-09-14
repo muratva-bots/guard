@@ -24,9 +24,7 @@ const Ready: Guard.IEvent<Events.ClientReady> = {
 
         await client.application.fetch();
         const ownerID =
-            client.application.owner instanceof Team
-                ? (client.application.owner as Team).ownerId
-                : client.application.owner.id;
+            client.config.BOT_OWNERS
         client.safes.set(ownerID, [SafeFlags.Full]);
 
         presenceGuard(client, guild);
